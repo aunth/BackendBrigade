@@ -1,0 +1,29 @@
+.inputField {
+    margin-bottom: 20px;
+}
+
+#taskList {
+    list-style: none;
+    padding: 0;
+}
+
+.task {
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.task.completed {
+    background-color: #f0f0f0;
+}
+
+.task span {
+    margin-right: 10px;
+    flex-grow: 1;
+}
+
+.task button {
+    margin-left: 10px;
+}

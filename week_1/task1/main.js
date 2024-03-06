@@ -1,84 +1,89 @@
+const tasks = [];
+let id = 0;
 
-let tasks = [];
-let Id = 1;
+const addTaskBtn = document.getElementById("addTaskBtn");
+const completedTasksBtn = document.getElementById("completedTasks");
+const uncompletedTasksBtn = document.getElementById("uncompletedTasks");
+const showAllTasksBtn = document.getElementById("showAllTasks");
 
 function addTask() {
-	let taskName = document.getElementById("newTask").value.trim();
-	if (taskName !== '') {
-		let newTask = {
-			id: Id++,
-			text: taskName.toUpperCase(),
-			completed: false,
-		};
-		tasks.push(newTask);
-		renderTasks(tasks);
-	} else {
-		alert("You should write a text");
-	}
-	document.getElementById("newTask").value = '';
+    const taskInput = document.getElementById("taskInput");
+    const taskName = taskInput.value.trim();
+    if (taskName !== '') {
+        const newTask = {
+            id: id++,
+            text: taskName.toUpperCase(),
+            completed: false,
+        };
+        tasks.push(newTask);
+        renderTasks(tasks);
+    } else {
+        alert("You should write a text");
+    }
+    taskInput.value = '';
 }
 
 function renderTasks(tasks, filter = "all") {
-
-	container = document.getElementById('taskList');
-	container.innerHTML = '';
-	if (filter === "completed") {
-		tasks = tasks.filter((task) => {
-			return task.completed === true;
-		});
-	} else if (filter === "uncompleted") {
-		tasks = tasks.filter((task) => {
-			return task.completed === false;
-		});
-	}
-	tasks.forEach(task => {
-		const taskElement = document.createElement('div');
-		taskElement.classList.add('task');
-		if (task.completed) {
-			taskElement.classList.add('completed');
-		}
-		taskElement.innerHTML = `
-			  <input type="checkbox" onchange="toggleTask(${task.id})" ${task.completed ? 'checked' : ''}>
-			  <span>${task.text}</span>
-			  <button onclick="deleteTask(${task.id})">Delete</button>
-			  <button onclick="renameTask(${task.id})">Rename</button>
-		`;
-		container.appendChild(taskElement);
-	});
+    const container = document.getElementById('taskList');
+    container.innerHTML = '';
+    let filteredTasks = tasks;
+    if (filter === "completed") {
+        filteredTasks = tasks.filter(task => task.completed);
+    } else if (filter === "uncompleted") {
+        filteredTasks = tasks.filter(task => !task.completed);
+    }
+    filteredTasks.forEach(task => {
+        const taskElement = document.createElement('div');
+        taskElement.classList.add('task');
+        if (task.completed) {
+            taskElement.classList.add('completed');
+        }
+        taskElement.innerHTML = `
+            <input type="checkbox" onchange="toggleTask(${task.id})" ${task.completed ? 'checked' : ''}>
+            <span ${task.completed ? 'style="text-decoration: line-through;"' : ''}>${task.text}</span>
+            <button onclick="deleteTask(${task.id})">Delete</button>
+            <button onclick="renameTask(${task.id})">Rename</button>
+        `;
+        container.appendChild(taskElement);
+    });
 }
 
 function renameTask(taskId) {
-	let task = tasks.find(task => task.id === taskId);
-	let newName = prompt("Enter a new name for the task:", task.text);
-	if (newName !== null) {
-		task.text = newName.toUpperCase();
-		renderTasks(tasks);
-	}
+    const task = tasks.find(task => task.id === taskId);
+    const newName = prompt("Enter a new name for the task:", task.text);
+    if (newName !== null) {
+        task.text = newName.toUpperCase();
+        renderTasks(tasks);
+    }
 }
 
 function toggleTask(taskId) {
-	let task = tasks.find(task => task.id === taskId);
-	task.completed = !task.completed;
-	renderTasks(tasks);
+    const task = tasks.find(task => task.id === taskId);
+    task.completed = !task.completed;
+    renderTasks(tasks);
 }
 
 function completedFilter() {
-	renderTasks(tasks, "completed");
+    renderTasks(tasks, "completed");
 }
 
 function uncompletedFilter() {
-	renderTasks(tasks, "uncompleted");
+    renderTasks(tasks, "uncompleted");
+}
+
+function showAllTasks() {
+    renderTasks(tasks, "all");
 }
 
 function deleteTask(id) {
-	tasks = tasks.filter(task => task.id !== id);
-	renderTasks(tasks);
+    const index = tasks.findIndex(task => task.id === id);
+    if (index !== -1) {
+        tasks.splice(index, 1);
+    }
+    renderTasks(tasks);
 }
 
-let button1 = document.getElementById("addNewTask");
-let button2 = document.getElementById("completedTasks");
-let button3 = document.getElementById("uncompletedTasks");
-
-button1.addEventListener("click", addTask);
-button2.addEventListener("click", completedFilter);
-button3.addEventListener("click", uncompletedFilter);
+addTaskBtn.addEventListener("click", addTask);
+completedTasksBtn.addEventListener("click", completedFilter);
+uncompletedTasksBtn.addEventListener("click", uncompletedFilter);
+showAllTasksBtn.addEventListener("click", showAllTasks);
