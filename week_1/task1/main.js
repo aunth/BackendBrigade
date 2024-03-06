@@ -1,11 +1,11 @@
 
-var tasks = [];
-var Id = 1;
+let tasks = [];
+let Id = 1;
 
 function addTask() {
-	var taskName = document.getElementById("newTask").value.trim();
+	let taskName = document.getElementById("newTask").value.trim();
 	if (taskName !== '') {
-		var newTask = {
+		let newTask = {
 			id: Id++,
 			text: taskName.toUpperCase(),
 			completed: false,
@@ -48,8 +48,8 @@ function renderTasks(tasks, filter = "all") {
 }
 
 function renameTask(taskId) {
-	var task = tasks.find(task => task.id === taskId);
-	var newName = prompt("Enter a new name for the task:", task.text);
+	let task = tasks.find(task => task.id === taskId);
+	let newName = prompt("Enter a new name for the task:", task.text);
 	if (newName !== null) {
 		task.text = newName.toUpperCase();
 		renderTasks(tasks);
@@ -57,7 +57,7 @@ function renameTask(taskId) {
 }
 
 function toggleTask(taskId) {
-	var task = tasks.find(task => task.id === taskId);
+	let task = tasks.find(task => task.id === taskId);
 	task.completed = !task.completed;
 	renderTasks(tasks);
 }
@@ -75,9 +75,9 @@ function deleteTask(id) {
 	renderTasks(tasks);
 }
 
-var button1 = document.getElementById("addNewTask");
-var button2 = document.getElementById("completedTasks");
-var button3 = document.getElementById("uncompletedTasks");
+let button1 = document.getElementById("addNewTask");
+let button2 = document.getElementById("completedTasks");
+let button3 = document.getElementById("uncompletedTasks");
 
 button1.addEventListener("click", addTask);
 button2.addEventListener("click", completedFilter);
