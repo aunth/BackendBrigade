@@ -24,23 +24,23 @@ import { Employee, HolidayRequest } from './types.js';
         await addEmployeeFlow();
         break;
       case 'View list of employees':
-        console.log('Functionality not implemented.'); // Placeholder
+        await printEmployeeList();
         break;
       case 'Submit a holiday request':
         await submitHolidayRequestFlow();
         break;
       case 'View pending holiday requests':
-        console.log('Functionality not implemented.'); // Placeholder
+        await viewPendingRequests();
         break;
       case 'Approve or reject a holiday request':
-        console.log('Functionality not implemented.'); // Placeholder
+        await approveOrRejectRequest();
         break;
       case 'Exit':
         console.log('Exiting...');
-        return; // Properly exits the async function
+        return;
     }
 
-    await mainMenu(); // Loops back to main menu after action completion
+    await mainMenu();
   }
 
   async function addEmployeeFlow() {
@@ -60,7 +60,6 @@ import { Employee, HolidayRequest } from './types.js';
 
     addEmployee(answers.name, parseInt(answers.remainingHolidays, 10));
     console.log('Employee added successfully.');
-    await mainMenu(); // Ensures the menu is called after the operation
   }
   
   function addEmployee(name: string, remainingHolidays: number): void {
@@ -73,25 +72,89 @@ import { Employee, HolidayRequest } from './types.js';
     employees.push(newEmployee);
   }
 
+
+function getNameById(id: number): string | undefined {
+    const user = employees.find(employee => employee.id === id);
+  
+    if (!user) {
+      return undefined; // or null, depending on your preference
+    }
+  
+    return user.name;
+  }
+
+async function printEmployeeList() {
+  employees.forEach(employee => {
+    console.log(`${employee.id} - ${employee.name} (${employee.remainingHolidays} days remaining)`);
+  });
+}
+
+async function viewPendingRequests() {
+  console.log('List of Pending Holiday Requests:');
+  holidayRequests.filter(request => request.status === 'pending').forEach(request => {
+    console.log(`Employee ID: ${request.employeeId}(${getNameById(request.employeeId)}), ` +
+    `Start Date: ${request.startDate.toLocaleDateString('en-GB')}, ` +
+    `End Date: ${request.endDate.toLocaleDateString('en-GB')}`);
+  });
+}
+
+async function approveOrRejectRequest() {
+
+  const requestChoices = holidayRequests.map(request => ({
+      name: `ID: ${request.employeeId}(${getNameById(request.employeeId)}), Start Date: ${request.startDate.toLocaleDateString('en-GB')}, End Date: ${request.endDate.toLocaleDateString('en-GB')}`,
+      value: request.employeeId,
+  }));
+
+  const { requestId } = await inquirer.prompt([
+      {
+          type: 'list',
+          name: 'requestId',
+          message: 'Select a holiday request to approve or reject:',
+          choices: requestChoices
+      }
+  ]);
+
+  const { approvalAction } = await inquirer.prompt([
+      {
+          type: 'list',
+          name: 'approvalAction',
+          message: 'Approve or reject the selected holiday request?',
+          choices: ['Approve', 'Reject']
+      }
+  ]);
+
+  const selectedRequest = holidayRequests.find(request => request.employeeId === requestId);
+  if (!selectedRequest) {
+    return ;
+  }
+  if (approvalAction === 'Approve') {
+      selectedRequest.status = 'approved';
+  } else {
+      selectedRequest.status = 'rejected';
+  }
+
+  console.log(`Holiday request ${selectedRequest.employeeId} ${approvalAction.toLowerCase()}ed.`);
+}
+
   async function submitHolidayRequestFlow(){
     const { employeeId, startDate, endDate } = await inquirer.prompt([
       {
         type: 'number',
         name: 'employeeId',
         message: "Enter the employee's ID:",
-        validate: (input) => !isNaN(parseInt(input, 10)) || 'Please enter a valid employee ID',
+        validate: (input: string) => !isNaN(parseInt(input, 10)) || 'Please enter a valid employee ID',
       },
       {
         type: 'input',
         name: 'startDate',
         message: "Enter the start date (YYYY-MM-DD):",
-        validate: (input) => !isNaN(new Date(input).getTime()) || 'Please enter a valid date',
+        validate: (input: string) => !isNaN(new Date(input).getTime()) || 'Please enter a valid date',
       },
       {
         type: 'input',
         name: 'endDate',
         message: "Enter the end date (YYYY-MM-DD):",
-        validate: (input) => !isNaN(new Date(input).getTime()) || 'Please enter a valid date',
+        validate: (input: string) => !isNaN(new Date(input).getTime()) || 'Please enter a valid date',
       },
     ]);
 
@@ -111,8 +174,6 @@ import { Employee, HolidayRequest } from './types.js';
     } else {
       console.log(validationResult.message);
     }
-
-    await mainMenu();
   }
 
   function validateHolidayRequest(employeeId: number, startDate: Date, endDate: Date) {
@@ -136,12 +197,8 @@ import { Employee, HolidayRequest } from './types.js';
         return { isValid: false, message: "Request falls within a blackout period." };
       }
     }
-
-    // Further validations can be added here
-
     return { isValid: true, message: "Request is valid." };
   }
-  // Define and implement submitHolidayRequestFlow and processRequestFlow based on your application's needs
 
-  await mainMenu(); // Initiates the application flow
+  await mainMenu();
 })();
