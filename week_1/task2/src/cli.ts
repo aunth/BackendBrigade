@@ -53,7 +53,7 @@ import { Employee, HolidayRequest } from './types.js';
         type: 'input',
         name: 'remainingHolidays',
         message: "Number of remaining holidays:",
-        validate: (input) => !isNaN(parseFloat(input)) || 'Please enter a number',
+        validate: (input: string) => !isNaN(parseFloat(input)) || 'Please enter a number',
       },
     ]);
 
