@@ -77,7 +77,7 @@ function getNameById(id: number): string | undefined {
     const user = employees.find(employee => employee.id === id);
   
     if (!user) {
-      return undefined; // or null, depending on your preference
+      return undefined;
     }
   
     return user.name;
@@ -185,6 +185,10 @@ async function approveOrRejectRequest() {
 
     const differenceInTime = endDate.getTime() - startDate.getTime();
     const differenceInDay = differenceInTime / (1000 * 3600 * 24) + 1;
+
+    if (validateEmployee.remainingHolidays < 1 || differenceInDay > validateEmployee.remainingHolidays) {
+      return { isValid: false, message: "Cannot submit holiday request. Insufficient remaining holidays." };
+    }
 
     if (differenceInDay > holidayRules.maxConsecutiveDays) {
       return { isValid: false, message: `Request exceeds the maximum of ${holidayRules.maxConsecutiveDays} consecutive days.` };
