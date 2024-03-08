@@ -5,7 +5,7 @@ export interface Employee {
   }
   
   export interface HolidayRequest {
-    employeeId: string;
+    employeeId: number;
     startDate: Date;
     endDate: Date;
     status: 'pending' | 'approved' | 'rejected';
