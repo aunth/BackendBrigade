@@ -15,6 +15,7 @@ import { Employee, HolidayRequest } from './types.js';
         'Submit a holiday request',
         'View pending holiday requests',
         'Approve or reject a holiday request',
+        'Edit holiday rules',
         'Exit'
       ],
     }]);
@@ -34,6 +35,9 @@ import { Employee, HolidayRequest } from './types.js';
         break;
       case 'Approve or reject a holiday request':
         await approveOrRejectRequest();
+        break;
+      case 'Edit holiday rules':
+        await editHolidayRules();
         break;
       case 'Exit':
         console.log('Exiting...');
@@ -86,15 +90,22 @@ function getNameById(id: number): string | undefined {
 async function printEmployeeList() {
   employees.forEach(employee => {
     console.log(`${employee.id} - ${employee.name} (${employee.remainingHolidays} days remaining)`);
+    const employeeRequests = holidayRequests.filter(request => request.employeeId ===employee.id);
+    if (employeeRequests.length > 0) {
+      console.log(`\tHoliday Requests:`);
+      employeeRequests.forEach(request => {
+        console.log(`\t- Request ID: ${request.idForRequest}, From ${request.startDate.toLocaleDateString('en-GB')} to ${request.endDate.toLocaleDateString('en-GB')}, Status: ${request.status}`);
+      });
+    } else {
+      console.log(`\tNo holiday requests.`);
+    }
   });
 }
 
 async function viewPendingRequests() {
   console.log('List of Pending Holiday Requests:');
   holidayRequests.filter(request => request.status === 'pending').forEach(request => {
-    console.log(`Employee ID: ${request.employeeId}(${getNameById(request.employeeId)}), ` +
-    `Start Date: ${request.startDate.toLocaleDateString('en-GB')}, ` +
-    `End Date: ${request.endDate.toLocaleDateString('en-GB')}`);
+    console.log(`Request ID: ${request.idForRequest}, Employee ID: ${request.employeeId} (${getNameById(request.employeeId)}), Start Date: ${request.startDate.toLocaleDateString('en-GB')}, End Date: ${request.endDate.toLocaleDateString('en-GB')}, Status: ${request.status}`);
   });
 }
 
@@ -102,7 +113,7 @@ async function approveOrRejectRequest() {
 
   const requestChoices = holidayRequests.map(request => ({
       name: `ID: ${request.employeeId}(${getNameById(request.employeeId)}), Start Date: ${request.startDate.toLocaleDateString('en-GB')}, End Date: ${request.endDate.toLocaleDateString('en-GB')}`,
-      value: request.employeeId,
+      value: request.idForRequest,
   }));
 
   const { requestId } = await inquirer.prompt([
@@ -123,18 +134,30 @@ async function approveOrRejectRequest() {
       }
   ]);
 
-  const selectedRequest = holidayRequests.find(request => request.employeeId === requestId);
+  const selectedRequest = holidayRequests.find(request => request.idForRequest === requestId);
   if (!selectedRequest) {
+    console.log('Request not found.');
     return ;
   }
   if (approvalAction === 'Approve') {
       selectedRequest.status = 'approved';
+      console.log(`Holiday request ${selectedRequest.status}.`);
   } else {
       selectedRequest.status = 'rejected';
+      console.log('Request not found.');
+  }
+
+  const employeeName = getNameById(selectedRequest.employeeId);
+  if (employeeName) {
+    console.log(`Notification: ${employeeName}, your holiday request from ${selectedRequest.startDate.toLocaleDateString('en-GB')} to ${selectedRequest.endDate.toLocaleDateString('en-GB')} has been ${selectedRequest.status}.`);
+  } else {
+    console.log("Employee not found for the request.");
   }
 
   console.log(`Holiday request ${selectedRequest.employeeId} ${approvalAction.toLowerCase()}ed.`);
 }
+
+let nextRequestId = 1;
 
   async function submitHolidayRequestFlow(){
     const { employeeId, startDate, endDate } = await inquirer.prompt([
@@ -161,9 +184,11 @@ async function approveOrRejectRequest() {
     const start = new Date(startDate);
     const end = new Date(endDate)
 
+  
     const validationResult = validateHolidayRequest(employeeId, start, end);
     if (validationResult.isValid) {
       const newHolidayRequest: HolidayRequest = {
+        idForRequest: nextRequestId++,
         employeeId: employeeId,
         startDate: start,
         endDate: end,
@@ -195,13 +220,97 @@ async function approveOrRejectRequest() {
     }
 
     for (let period of holidayRules.blackoutPeriods) {
-      let blackoutStart = new Date(period.start);
-      let blackoutEnd = new Date(period.end);
-      if ((startDate >= blackoutStart && startDate <= blackoutEnd) || (endDate >= blackoutStart && endDate <= blackoutEnd)) {
+      let blackoutStart = new Date(period.start).getTime();
+      let blackoutEnd = new Date(period.end).getTime();
+      if ((startDate.getTime() >= blackoutStart && startDate.getTime() <= blackoutEnd) || (endDate.getTime() >= blackoutStart && endDate.getTime() <= blackoutEnd)) {
         return { isValid: false, message: "Request falls within a blackout period." };
       }
     }
     return { isValid: true, message: "Request is valid." };
+  }
+
+  async function editHolidayRules() {
+    const { action } = await inquirer.prompt([{
+      type: 'list',
+      name: 'action',
+      message: 'Edit Holiday Rules',
+      choices: [
+        'Edit maximum consecutive holiday days',
+        'Add a blackout period',
+        'Remove a blackout period',
+        'Back to Main Menu'
+      ],
+    }]);
+  
+    switch (action) {
+      case 'Edit maximum consecutive holiday days':
+        await editMaxConsecutiveDays();
+        break;
+      case 'Add a blackout period':
+        await addBlackoutPeriod();
+        break;
+      case 'Remove a blackout period':
+        await removeBlackoutPeriod();
+        break;
+      case 'Back to Main Menu':
+        return;
+    }
+
+    await editHolidayRules();
+  }
+
+  async function editMaxConsecutiveDays() {
+    const { newMax } = await inquirer.prompt([{
+      type: 'input',
+      name: 'newMax',
+      message: "Enter the new maximum number of consecutive holiday days:",
+      validate: (input: string) => !isNaN(parseInt(input, 10)) || 'Please enter a number',
+    }]);
+
+    holidayRules.maxConsecutiveDays = parseInt(newMax)
+    console.log(`Maximum consecutive holiday days updated to ${newMax}.`);
+  }
+
+  async function addBlackoutPeriod() {
+    const { startDate, endDate } = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'startDate',
+        message: "Enter the start date of the blackout period (YYYY-MM-DD):",
+        validate: (input: string) => /^\d{4}-\d{2}-\d{2}$/.test(input) || 'Please enter a date in the format YYYY-MM-DD',
+      },
+      {
+        type: 'input',
+        name: 'endDate',
+        message: "Enter the end date of the blackout period (YYYY-MM-DD):",
+        validate: (input: string) => /^\d{4}-\d{2}-\d{2}$/.test(input) || 'Please enter a date in the format YYYY-MM-DD',
+      },
+    ]);
+
+    holidayRules.blackoutPeriods.push({ start: startDate.toLocaleDateString('en-GB'), end: endDate.toLocaleDateString('en-GB') });
+    console.log(`Blackout period from ${startDate} to ${endDate} added successfully.`);
+  }
+
+  async function removeBlackoutPeriod() {
+    if (holidayRules.blackoutPeriods.length === 0) {
+      console.log("There are no blackout periods to remove.");
+      return;
+    }
+  
+    const { selectedPeriod } = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'selectedPeriod',
+        message: 'Select a blackout period to remove:',
+        choices: holidayRules.blackoutPeriods.map((period, index) => ({
+          name: `${period.start} to ${period.end}`,
+          value: index
+        }))
+      }
+    ]);
+  
+    const removedPeriod = holidayRules.blackoutPeriods.splice(selectedPeriod, 1)[0];
+    console.log(`Blackout period from ${removedPeriod.start} to ${removedPeriod.end} removed successfully.`);
   }
 
   await mainMenu();
