@@ -105,7 +105,9 @@ async function printEmployeeList() {
 async function viewPendingRequests() {
   console.log('List of Pending Holiday Requests:');
   holidayRequests.filter(request => request.status === 'pending').forEach(request => {
-    console.log(`Request ID: ${request.idForRequest}, Employee ID: ${request.employeeId} (${getNameById(request.employeeId)}), Start Date: ${request.startDate.toLocaleDateString('en-GB')}, End Date: ${request.endDate.toLocaleDateString('en-GB')}, Status: ${request.status}`);
+    console.log(`Request ID: ${request.idForRequest}, Employee ID: ${request.employeeId}` + 
+    `(${getNameById(request.employeeId)}), Start Date: ${request.startDate.toLocaleDateString('en-GB')},` +
+    `End Date: ${request.endDate.toLocaleDateString('en-GB')}`);
   });
 }
 
@@ -141,6 +143,15 @@ async function approveOrRejectRequest() {
   }
   if (approvalAction === 'Approve') {
       selectedRequest.status = 'approved';
+      let employee = employees.find(emp => emp.id == selectedRequest.employeeId);
+      if (employee) {
+        const holidaysTaken = (selectedRequest.endDate.getTime() - selectedRequest.startDate.getTime()) / (1000 * 60 * 60 * 24);
+        console.log(holidaysTaken);
+        employee.remainingHolidays -= holidaysTaken;
+        console.log(`Holiday request approved.`);
+      } else {
+        console.log('Employee not found for the request.');
+      }
       console.log(`Holiday request ${selectedRequest.status}.`);
   } else {
       selectedRequest.status = 'rejected';
