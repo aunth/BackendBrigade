@@ -5,6 +5,7 @@ export interface Employee {
   }
   
   export interface HolidayRequest {
+    idForRequest: number;
     employeeId: number;
     startDate: Date;
     endDate: Date;
