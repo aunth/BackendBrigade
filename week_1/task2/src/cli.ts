@@ -64,7 +64,12 @@ import { Employee, HolidayRequest, Department } from './types.js';
         type: 'input',
         name: 'remainingHolidays',
         message: "Number of remaining holidays:",
-        validate: (input: string) => !isNaN(parseFloat(input)) || 'Please enter a number',
+        validate: (input: string) => {
+          const parsedInput = parseInt(input, 10);
+          return !isNaN(parsedInput) && parsedInput.toString() === input && parsedInput >= 0
+            ? true
+            : 'Please enter a valid number of whole holidays';
+        },
       },
     ]);
 
@@ -124,6 +129,11 @@ async function approveOrRejectRequest() {
       name: `ID: ${request.employeeId}(${getNameById(request.employeeId)}), Start Date: ${request.startDate.toLocaleDateString('en-CA')}, End Date: ${request.endDate.toLocaleDateString('en-CA')}`,
       value: request.idForRequest,
   }));
+
+  if (requestChoices.length == 0) {
+    console.log('There are not any requests');
+    return await mainMenu();
+  } 
 
   const { requestId } = await inquirer.prompt([
       {
