@@ -90,11 +90,11 @@ function getNameById(id: number): string | undefined {
 async function printEmployeeList() {
   employees.forEach(employee => {
     console.log(`${employee.id} - ${employee.name} (${employee.remainingHolidays} days remaining)`);
-    const employeeRequests = holidayRequests.filter(request => request.employeeId ===employee.id);
+    const employeeRequests = holidayRequests.filter(request => request.employeeId === employee.id);
     if (employeeRequests.length > 0) {
       console.log(`\tHoliday Requests:`);
       employeeRequests.forEach(request => {
-        console.log(`\t- Request ID: ${request.idForRequest}, From ${request.startDate.toLocaleDateString('en-GB')} to ${request.endDate.toLocaleDateString('en-GB')}, Status: ${request.status}`);
+        console.log(`\t- Request ID: ${request.idForRequest}, From ${request.startDate.toLocaleDateString('en-CA')} to ${request.endDate.toLocaleDateString('en-CA')}, Status: ${request.status}`);
       });
     } else {
       console.log(`\tNo holiday requests.`);
@@ -106,15 +106,15 @@ async function viewPendingRequests() {
   console.log('List of Pending Holiday Requests:');
   holidayRequests.filter(request => request.status === 'pending').forEach(request => {
     console.log(`Request ID: ${request.idForRequest}, Employee ID: ${request.employeeId}` + 
-    `(${getNameById(request.employeeId)}), Start Date: ${request.startDate.toLocaleDateString('en-GB')},` +
-    `End Date: ${request.endDate.toLocaleDateString('en-GB')}`);
+    `(${getNameById(request.employeeId)}), Start Date: ${request.startDate.toLocaleDateString('en-CA')},` +
+    `End Date: ${request.endDate.toLocaleDateString('en-CA')}`);
   });
 }
 
 async function approveOrRejectRequest() {
 
   const requestChoices = holidayRequests.map(request => ({
-      name: `ID: ${request.employeeId}(${getNameById(request.employeeId)}), Start Date: ${request.startDate.toLocaleDateString('en-GB')}, End Date: ${request.endDate.toLocaleDateString('en-GB')}`,
+      name: `ID: ${request.employeeId}(${getNameById(request.employeeId)}), Start Date: ${request.startDate.toLocaleDateString('en-CA')}, End Date: ${request.endDate.toLocaleDateString('en-CA')}`,
       value: request.idForRequest,
   }));
 
@@ -160,7 +160,7 @@ async function approveOrRejectRequest() {
 
   const employeeName = getNameById(selectedRequest.employeeId);
   if (employeeName) {
-    console.log(`Notification: ${employeeName}, your holiday request from ${selectedRequest.startDate.toLocaleDateString('en-GB')} to ${selectedRequest.endDate.toLocaleDateString('en-GB')} has been ${selectedRequest.status}.`);
+    console.log(`Notification: ${employeeName}, your holiday request from ${selectedRequest.startDate.toLocaleDateString('en-CA')} to ${selectedRequest.endDate.toLocaleDateString('en-CA')} has been ${selectedRequest.status}.`);
   } else {
     console.log("Employee not found for the request.");
   }
@@ -173,22 +173,22 @@ let nextRequestId = 1;
   async function submitHolidayRequestFlow(){
     const { employeeId, startDate, endDate } = await inquirer.prompt([
       {
-        type: 'number',
+        type: 'input',
         name: 'employeeId',
         message: "Enter the employee's ID:",
-        validate: (input: string) => !isNaN(parseInt(input, 10)) || 'Please enter a valid employee ID',
+        validate: (input: string) => !isNaN(parseInt(input)) && /^-?\d+(\.\d+)?$/.test(input) || 'Please enter a valid employee ID',
       },
       {
         type: 'input',
         name: 'startDate',
         message: "Enter the start date (YYYY-MM-DD):",
-        validate: (input: string) => !isNaN(new Date(input).getTime()) || 'Please enter a valid date',
+        validate: (input: string) => /^\d{4}-\d{2}-\d{2}$/.test(input) && !isNaN(new Date(input).getTime()) || 'Please enter a valid date',
       },
       {
         type: 'input',
         name: 'endDate',
         message: "Enter the end date (YYYY-MM-DD):",
-        validate: (input: string) => !isNaN(new Date(input).getTime()) || 'Please enter a valid date',
+        validate: (input: string) => /^\d{4}-\d{2}-\d{2}$/.test(input) && !isNaN(new Date(input).getTime()) || 'Please enter a valid date',
       },
     ]);
 
@@ -196,11 +196,11 @@ let nextRequestId = 1;
     const end = new Date(endDate)
 
   
-    const validationResult = validateHolidayRequest(employeeId, start, end);
+    const validationResult = validateHolidayRequest(parseInt(employeeId, 10), start, end);
     if (validationResult.isValid) {
       const newHolidayRequest: HolidayRequest = {
         idForRequest: nextRequestId++,
-        employeeId: employeeId,
+        employeeId: parseInt(employeeId, 10),
         startDate: start,
         endDate: end,
         status: 'pending'
@@ -224,6 +224,10 @@ let nextRequestId = 1;
 
     if (validateEmployee.remainingHolidays < 1 || differenceInDay > validateEmployee.remainingHolidays) {
       return { isValid: false, message: "Cannot submit holiday request. Insufficient remaining holidays." };
+    }
+
+    if (differenceInDay < 1) {
+      return { isValid: false, message: "The end date must be after the start date." };
     }
 
     if (differenceInDay > holidayRules.maxConsecutiveDays) {
@@ -275,7 +279,7 @@ let nextRequestId = 1;
       type: 'input',
       name: 'newMax',
       message: "Enter the new maximum number of consecutive holiday days:",
-      validate: (input: string) => !isNaN(parseInt(input, 10)) || 'Please enter a number',
+      validate: (input: string) => !isNaN(parseInt(input, 10)) && /^-?\d+(\.\d+)?$/.test(input) || 'Please enter a number',
     }]);
 
     holidayRules.maxConsecutiveDays = parseInt(newMax)
@@ -288,17 +292,17 @@ let nextRequestId = 1;
         type: 'input',
         name: 'startDate',
         message: "Enter the start date of the blackout period (YYYY-MM-DD):",
-        validate: (input: string) => /^\d{4}-\d{2}-\d{2}$/.test(input) || 'Please enter a date in the format YYYY-MM-DD',
+        validate: (input: string) => /^\d{4}-\d{2}-\d{2}$/.test(input) && !isNaN(new Date(input).getTime()) || 'Please enter a date in the format YYYY-MM-DD',
       },
       {
         type: 'input',
         name: 'endDate',
         message: "Enter the end date of the blackout period (YYYY-MM-DD):",
-        validate: (input: string) => /^\d{4}-\d{2}-\d{2}$/.test(input) || 'Please enter a date in the format YYYY-MM-DD',
+        validate: (input: string) => /^\d{4}-\d{2}-\d{2}$/.test(input) && !isNaN(new Date(input).getTime()) || 'Please enter a date in the format YYYY-MM-DD',
       },
     ]);
 
-    holidayRules.blackoutPeriods.push({ start: startDate.toLocaleDateString('en-GB'), end: endDate.toLocaleDateString('en-GB') });
+    holidayRules.blackoutPeriods.push({ start: startDate, end: endDate });
     console.log(`Blackout period from ${startDate} to ${endDate} added successfully.`);
   }
 
@@ -314,14 +318,14 @@ let nextRequestId = 1;
         name: 'selectedPeriod',
         message: 'Select a blackout period to remove:',
         choices: holidayRules.blackoutPeriods.map((period, index) => ({
-          name: `${period.start} to ${period.end}`,
+          name: `${new Date(period.start).toLocaleDateString('en-CA')} to ${new Date(period.end).toLocaleDateString('en-CA')}`,
           value: index
         }))
       }
     ]);
-  
+
     const removedPeriod = holidayRules.blackoutPeriods.splice(selectedPeriod, 1)[0];
-    console.log(`Blackout period from ${removedPeriod.start} to ${removedPeriod.end} removed successfully.`);
+    console.log(`Blackout period from ${new Date(removedPeriod.start).toLocaleDateString('en-CA')} to ${new Date(removedPeriod.end).toLocaleDateString('en-CA')} removed successfully.`);
   }
 
   await mainMenu();
