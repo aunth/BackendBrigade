@@ -12,7 +12,7 @@ function addTask() {
     if (taskName !== '') {
         const newTask = {
             id: id++,
-            text: taskName.toUpperCase(),
+            taskName: taskName.toUpperCase(),
             completed: false,
         };
         tasks.push(newTask);
@@ -40,7 +40,7 @@ function renderTasks(tasks, filter = "all") {
         }
         taskElement.innerHTML = `
             <input type="checkbox" onchange="toggleTask(${task.id})" ${task.completed ? 'checked' : ''}>
-            <span ${task.completed ? 'style="text-decoration: line-through;"' : ''}>${task.text}</span>
+            <span ${task.completed ? 'style="text-decoration: line-through;"' : ''}>${task.taskName}</span>
             <button onclick="deleteTask(${task.id})">Delete</button>
             <button onclick="renameTask(${task.id})">Rename</button>
         `;
@@ -50,9 +50,9 @@ function renderTasks(tasks, filter = "all") {
 
 function renameTask(taskId) {
     const task = tasks.find(task => task.id === taskId);
-    const newName = prompt("Enter a new name for the task:", task.text);
+    const newName = prompt("Enter a new name for the task:", task.taskName);
     if (newName !== null) {
-        task.text = newName.toUpperCase();
+        task.taskName = newName.toUpperCase();
         renderTasks(tasks);
     }
 }
