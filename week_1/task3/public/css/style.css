@@ -1,0 +1,24 @@
+/* styles.css */
+
+.employee {
+	margin-bottom: 20px;
+  }
+  
+  .employee p {
+	margin: 0;
+  }
+  
+  .employee .requests-heading {
+	font-weight: bold;
+  }
+  
+  .requests-list li {
+    margin-bottom: 5px;
+    padding-left: 20px;
+}
+  
+  .employee .requests-list li {
+	margin-bottom: 5px;
+  }
+  
+  
