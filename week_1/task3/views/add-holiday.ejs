@@ -3,11 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <title>Add Holiday Request</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
     <h1>Add New Holiday Request</h1>
-    <% if (typeof error !== 'undefined') { %>
-        <p style="color: red;"><%= error %></p>
+    <% if (typeof error !== 'undefined' && error) { %>
+        <div class="error-message">
+            <%= error %>
+            <button class="close-btn" onclick="this.parentElement.style.display='none';">x</button>
+        </div>
     <% } %>
     <form action="/add-holiday" method="POST">
         <div>

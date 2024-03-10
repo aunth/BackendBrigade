@@ -3,7 +3,8 @@ const router = express.Router();
 const dataStore = require('../dataStore');
 
 router.get('/', (req, res) => {
-    res.render('add-holiday');
+    const error = req.query.error;
+    res.render('add-holiday', {error: error});
 });
 
 router.post('/', (req, res) => {
@@ -52,6 +53,8 @@ router.post('/', (req, res) => {
     };
 
     dataStore.holidayRequests.push(newRequest);
+
+    console.log(`[New Request] Request ID: ${newRequest.idForRequest}, Employee ID: ${empId} (${employee.name}), Start Date: ${start.toLocaleDateString('en-CA')}, End Date: ${end.toLocaleDateString('en-CA')}, Status: ${newRequest.status}`);
 
     res.redirect('/holidays');
 
