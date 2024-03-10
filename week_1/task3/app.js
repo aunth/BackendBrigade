@@ -23,12 +23,12 @@ app.use((req, res, next) => {
 
 const employeesRouter = require('./routes/employees');
 const holidaysRouter = require('./routes/holidays');
-//const addHolidayRouter = require('./routes/add-holiday');
+const addHolidayRouter = require('./routes/add-holiday');
 
 // Mount route handlers
 app.use('/employees', employeesRouter);
 app.use('/holidays', holidaysRouter);
-//app.use('/add-holiday', addHolidayRouter);
+app.use('/add-holiday', addHolidayRouter);
 
 // Starting the server
 app.listen(port, () => {
