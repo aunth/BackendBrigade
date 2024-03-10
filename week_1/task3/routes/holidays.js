@@ -1,12 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { holidayRequests } = require('../dataStore');
+const { holidayRequests, employees, getNameById } = require('../dataStore');
 
-// Route to display list of holiday requests
 router.get('/', (req, res) => {
-    res.render('holidays', { holidayRequests });
+    res.render('holidays', { holidayRequests, getNameById, employees});
 });
 
-// Add more routes as needed for handling holiday request submissions, etc.
 
 module.exports = router;

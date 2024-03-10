@@ -21,29 +21,14 @@ app.use((req, res, next) => {
   next();
 });
 
-// Routes
-// Display list of employees
-app.get('/employees', (req, res) => {
-  res.render('employees', { employees });
-});
+const employeesRouter = require('./routes/employees');
+const holidaysRouter = require('./routes/holidays');
+//const addHolidayRouter = require('./routes/add-holiday');
 
-// Display list of holiday requests
-app.get('/holidays', (req, res) => {
-  res.render('holidays', { holidayRequests });
-});
-
-// Display form to add a new holiday request
-app.get('/add-holiday', (req, res) => {
-  res.render('add-holiday', { employees });
-});
-
-// Handle form submission for adding a holiday request
-app.post('/add-holiday', (req, res) => {
-  const { employeeId, startDate, endDate } = req.body;
-  // Add logic to update holidayRequests array or data store
-  console.log('Holiday Request Added:', { employeeId, startDate, endDate }); // Placeholder for actual logic
-  res.redirect('/holidays');
-});
+// Mount route handlers
+app.use('/employees', employeesRouter);
+app.use('/holidays', holidaysRouter);
+//app.use('/add-holiday', addHolidayRouter);
 
 // Starting the server
 app.listen(port, () => {
