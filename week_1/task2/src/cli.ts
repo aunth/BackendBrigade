@@ -1,6 +1,6 @@
 import inquirer from "inquirer";
-import { employees, holidayRequests, holidayRules } from './dataStore.js';
-import { Employee, HolidayRequest } from './types.js';
+import { employees, holidayRequests, holidayRulesByDepartment } from './dataStore.js';
+import { Employee, HolidayRequest, Department } from './types.js';
 
 
 (async () => {
@@ -55,22 +55,34 @@ import { Employee, HolidayRequest } from './types.js';
         message: "Employee's name:",
       },
       {
+        type: 'list',
+        name: 'department',
+        message: 'Select your department:',
+        choices: Object.values(Department)
+      },
+      {
         type: 'input',
         name: 'remainingHolidays',
         message: "Number of remaining holidays:",
-        validate: (input: string) => !isNaN(parseFloat(input)) || 'Please enter a number',
+        validate: (input: string) => {
+          const parsedInput = parseInt(input, 10);
+          return !isNaN(parsedInput) && parsedInput.toString() === input && parsedInput >= 0
+            ? true
+            : 'Please enter a valid number of whole holidays';
+        },
       },
     ]);
 
-    addEmployee(answers.name, parseInt(answers.remainingHolidays, 10));
+    addEmployee(answers.name, answers.department, parseInt(answers.remainingHolidays, 10));
     console.log('Employee added successfully.');
   }
   
-  function addEmployee(name: string, remainingHolidays: number): void {
+  function addEmployee(name: string, department: Department, remainingHolidays: number): void {
     const maxId = employees.reduce((max, employee) => Math.max(max, employee.id), 0);
     const newEmployee: Employee = {
       id: maxId + 1,
       name,
+      department,
       remainingHolidays,
     };
     employees.push(newEmployee);
@@ -89,7 +101,7 @@ function getNameById(id: number): string | undefined {
 
 async function printEmployeeList() {
   employees.forEach(employee => {
-    console.log(`${employee.id} - ${employee.name} (${employee.remainingHolidays} days remaining)`);
+    console.log(`${employee.id} - ${employee.name}, ${employee.department} (${employee.remainingHolidays} days remaining)`);
     const employeeRequests = holidayRequests.filter(request => request.employeeId === employee.id);
     if (employeeRequests.length > 0) {
       console.log(`\tHoliday Requests:`);
@@ -118,6 +130,11 @@ async function approveOrRejectRequest() {
       value: request.idForRequest,
   }));
 
+  if (requestChoices.length == 0) {
+    console.log('There are not any requests');
+    return await mainMenu();
+  } 
+
   const { requestId } = await inquirer.prompt([
       {
           type: 'list',
@@ -145,8 +162,7 @@ async function approveOrRejectRequest() {
       selectedRequest.status = 'approved';
       let employee = employees.find(emp => emp.id == selectedRequest.employeeId);
       if (employee) {
-        const holidaysTaken = (selectedRequest.endDate.getTime() - selectedRequest.startDate.getTime()) / (1000 * 60 * 60 * 24);
-        console.log(holidaysTaken);
+        const holidaysTaken = (selectedRequest.endDate.getTime() - selectedRequest.startDate.getTime()) / (1000 * 60 * 60 * 24) + 1;
         employee.remainingHolidays -= holidaysTaken;
         console.log(`Holiday request approved.`);
       } else {
@@ -222,6 +238,8 @@ let nextRequestId = 1;
     const differenceInTime = endDate.getTime() - startDate.getTime();
     const differenceInDay = differenceInTime / (1000 * 3600 * 24) + 1;
 
+    const holidayRules = holidayRulesByDepartment[validateEmployee.department];
+
     if (validateEmployee.remainingHolidays < 1 || differenceInDay > validateEmployee.remainingHolidays) {
       return { isValid: false, message: "Cannot submit holiday request. Insufficient remaining holidays." };
     }
@@ -245,6 +263,18 @@ let nextRequestId = 1;
   }
 
   async function editHolidayRules() {
+    const { departament } = await inquirer.prompt([{
+      type: 'list',
+      name: 'departament',
+      message: 'Which department\'s rules do you want to change?',
+      choices: Object.values(Department),
+    }]);
+
+    await editHolidayRulesByDepartament(departament);
+  }
+
+  async function editHolidayRulesByDepartament(departament: Department) {
+
     const { action } = await inquirer.prompt([{
       type: 'list',
       name: 'action',
@@ -259,22 +289,22 @@ let nextRequestId = 1;
   
     switch (action) {
       case 'Edit maximum consecutive holiday days':
-        await editMaxConsecutiveDays();
+        await editMaxConsecutiveDays(departament);
         break;
       case 'Add a blackout period':
-        await addBlackoutPeriod();
+        await addBlackoutPeriod(departament);
         break;
       case 'Remove a blackout period':
-        await removeBlackoutPeriod();
+        await removeBlackoutPeriod(departament);
         break;
       case 'Back to Main Menu':
         return;
     }
 
-    await editHolidayRules();
+    await mainMenu();
   }
 
-  async function editMaxConsecutiveDays() {
+  async function editMaxConsecutiveDays(departament: Department) {
     const { newMax } = await inquirer.prompt([{
       type: 'input',
       name: 'newMax',
@@ -282,11 +312,12 @@ let nextRequestId = 1;
       validate: (input: string) => !isNaN(parseInt(input, 10)) && /^-?\d+(\.\d+)?$/.test(input) || 'Please enter a number',
     }]);
 
+    const holidayRules = holidayRulesByDepartment[departament];
     holidayRules.maxConsecutiveDays = parseInt(newMax)
-    console.log(`Maximum consecutive holiday days updated to ${newMax}.`);
+    console.log(`Maximum consecutive holiday days in ${departament} departament updated to ${newMax}.`);
   }
 
-  async function addBlackoutPeriod() {
+  async function addBlackoutPeriod(departament: Department) {
     const { startDate, endDate } = await inquirer.prompt([
       {
         type: 'input',
@@ -302,11 +333,13 @@ let nextRequestId = 1;
       },
     ]);
 
+    const holidayRules = holidayRulesByDepartment[departament];
     holidayRules.blackoutPeriods.push({ start: startDate, end: endDate });
-    console.log(`Blackout period from ${startDate} to ${endDate} added successfully.`);
+    console.log(`Blackout period from ${startDate} to ${endDate} added successfully in ${departament} departament.`);
   }
 
-  async function removeBlackoutPeriod() {
+  async function removeBlackoutPeriod(departament: Department) {
+    const holidayRules = holidayRulesByDepartment[departament];
     if (holidayRules.blackoutPeriods.length === 0) {
       console.log("There are no blackout periods to remove.");
       return;
@@ -325,7 +358,8 @@ let nextRequestId = 1;
     ]);
 
     const removedPeriod = holidayRules.blackoutPeriods.splice(selectedPeriod, 1)[0];
-    console.log(`Blackout period from ${new Date(removedPeriod.start).toLocaleDateString('en-CA')} to ${new Date(removedPeriod.end).toLocaleDateString('en-CA')} removed successfully.`);
+    console.log(`Blackout period from ${new Date(removedPeriod.start).toLocaleDateString('en-CA')} to` + 
+    `${new Date(removedPeriod.end).toLocaleDateString('en-CA')} removed successfully from ${departament} departament.`);
   }
 
   await mainMenu();
