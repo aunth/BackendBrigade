@@ -1,16 +1,17 @@
 import express, {Response, Request} from 'express';
-import { employees, holidayRequests, holidayRulesByDepartment } from '../../data/dataStore';
+import { holidayRulesByDepartment } from '../../data/dataStore';
 import { HolidayRequest } from '../types/types';
+import { getEmployees, getHolidayRequests } from '../utils/utils';
 
 
 const router = express.Router();
 
 
-router.get('/', (req, res) => {
+router.get('/', (req: Request, res: Response) => {
     res.render('add-holiday');
 });
 
-router.post('/', (req, res) => {
+router.post('/', (req: Request, res: Response) => {
     const {employeeId, startDate, endDate} = req.body;
     const empId = Number(employeeId);
     const start = new Date(startDate);
@@ -19,6 +20,10 @@ router.post('/', (req, res) => {
     if (!employeeId || !startDate || !endDate) {
         return res.redirect('add-holiday?error=Invalid input');
     }
+
+    let employees = getEmployees();
+    let holidayRequests = getHolidayRequests();
+    
 
     const employee = employees.find(emp => emp.id === empId)
     if (!employee){
