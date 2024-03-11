@@ -51,6 +51,10 @@ router.post('/', (req, res) => {
         status: 'pending'
     };
 
+    console.log(`User with ${newRequest.employeeId} id create new Holiday Request ` + 
+                `from ${newRequest.startDate.toLocaleDateString('en-CA')} ` + 
+                `to ${newRequest.endDate.toLocaleDateString('en-CA')}`)
+
     dataStore.holidayRequests.push(newRequest);
 
     res.redirect('/holidays');
