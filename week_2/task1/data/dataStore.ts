@@ -1,16 +1,4 @@
-import { Employee, HolidayRequest, HolidayRule, Department} from '../src/types/types';
-
-export const employees: Employee[] = [
-  { id: 1, name: 'John Doe', department: Department.IT, remainingHolidays: 1 },
-  { id: 2, name: 'Jane Smith', department: Department.HR, remainingHolidays: 20 },
-];
-
-
-export const holidayRequests: HolidayRequest[] = [
-  { idForRequest: 1, employeeId: 1, startDate: new Date('2024-04-01'), endDate: new Date('2024-04-05'), status: 'pending' },
-  { idForRequest: 2, employeeId: 2, startDate: new Date('2024-05-10'), endDate: new Date('2024-05-15'), status: 'pending' },
-  { idForRequest: 3, employeeId: 2, startDate: new Date('2024-06-20'), endDate: new Date('2024-06-25'), status: 'pending' }
-];
+import { HolidayRule, Department } from '../src/types/types';
 
 export const holidayRulesByDepartment: { [key in Department]: HolidayRule } = {
   [Department.IT]: {
