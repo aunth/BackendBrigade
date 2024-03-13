@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/css/style.css">
+    <title>Update Holiday Request</title>
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <h1>Update Holiday Request</h1>
+            <% if (typeof error !== 'undefined' && error) { %>
+                <div class="error-message">
+                    <%= error %>
+                    <button class="close-btn" onclick="this.parentElement.style.display='none';">x</button>
+                </div>
+            <% } %>
+            <form action="/update-request" method="POST">
+                <div>
+                    <label for="requestId">Request ID:</label>
+                    <input type="number" id="requestId" name="requestId" value="" required>
+                </div>
+                <div>
+                    <label for="startDate">New Start Date:</label>
+                    <input type="date" id="startDate" name="startDate" required>
+                </div>
+                <div>
+                    <label for="endDate">New End Date:</label>
+                    <input type="date" id="endDate" name="endDate" required>
+                </div>
+                <button type="submit">Submit Updates</button>
+            </form>
+        </div>
+        <div class="holidays-container">
+            <% if(holidays && holidays.length > 0) { %>
+                <h3>Upcoming Public Holidays</h3>
+                <ul>
+                    <% holidays.forEach(function(holiday) { %>
+                        <li><%= holiday.name %> - <%= holiday.date %></li>
+                    <% }) %>
+                </ul>
+            <% } %>
+        </div>
+    </div>
+    <h1>List of Pending Holiday Requests</h1>
+    <ul>
+        <% holidayRequests.filter(request => request.status === 'pending').forEach(request => { %>
+            <li>
+                <strong>Request ID:</strong> <%= request.idForRequest %>, 
+                <strong>Employee ID:</strong> <%= request.employeeId %> (<%= getNameById(request.employeeId) %>), 
+                <strong>Start Date:</strong> <%= request.startDate.toLocaleDateString('en-CA') %>,
+                <strong>End Date:</strong> <%= request.endDate.toLocaleDateString('en-CA') %>
+            </li>
+        <% }); %>
+    </ul>
+    <a href="/employees">Back to Employees List</a>
+</body>
+</html>

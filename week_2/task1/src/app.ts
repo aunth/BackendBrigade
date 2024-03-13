@@ -9,7 +9,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json()); // For parsing application/json
 
 // Static files
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '../public')));
 
 // EJS Setup
 app.set('view engine', 'ejs');
@@ -20,13 +20,17 @@ app.use((req, res, next) => {
   next();
 });
 
+import mainRouter from './routes/main';
 import employeesRouter from './routes/employees';
 import holidaysRouter from './routes/holidays';
-import addHolidayRouter from './routes/add-holiday';
+import addRequestsRouter from './routes/add-request';
+import updateRequestRouter from './routes/update-request';
 
+app.use('/', mainRouter)
 app.use('/employees', employeesRouter);
 app.use('/holidays', holidaysRouter);
-app.use('/add-holiday', addHolidayRouter);
+app.use('/add-request', addRequestsRouter);
+app.use('/update-request', updateRequestRouter)
 
 // Starting the server
 app.listen(port, () => {

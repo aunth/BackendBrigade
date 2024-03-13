@@ -1,6 +1,8 @@
 
-import { Employee, HolidayRequest } from '../types/types';
+import { Employee, HolidayRequest} from '../types/types';
 import * as fs from 'fs';
+import axios, { AxiosError } from 'axios';
+
 
 export const employeesFilename = './data/employees.json';
 export const holidaysFilename = './data/holidays.json';
@@ -33,6 +35,17 @@ export function getHolidayRequests(): HolidayRequest[] {
   }
 }
 
+export function saveHolidayRequest(newRequest: HolidayRequest): void {
+  const holidayRequests = getHolidayRequests();
+  holidayRequests.push(newRequest);
+
+  try {
+    fs.writeFileSync(holidaysFilename, JSON.stringify(holidayRequests, null, 2), 'utf-8');
+  } catch (error) {
+    console.error('Error writing holiday requests data:', error);
+  }
+}
+
 
 export function getNameById(id: number): string | undefined {
     const employees: Employee[] = getEmployees();
@@ -42,4 +55,26 @@ export function getNameById(id: number): string | undefined {
       return undefined;
     }
     return user.name;
+}
+
+export function getCountryById(id: number): string {
+  const employees: Employee[] = getEmployees();
+  const employee = employees.find(employee => employee.id === id);
+  return employee ? employee.country : "";
+}
+
+export async function getNextPublicHolidays(countryCode: string) {
+  try {
+    const response = await axios.get(`https://date.nager.at/api/v3/NextPublicHolidays/${countryCode}`);
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+        console.error('Error fetching public holidays:', error.message);
+        console.error('Response status:', error.response?.status);
+        console.error('Response data:', error.response?.data);
+    } else {
+        console.error('An unexpected error occurred:', error);
+    }
+    return []; 
+  }
 }

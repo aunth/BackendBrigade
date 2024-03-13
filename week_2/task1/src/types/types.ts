@@ -1,8 +1,10 @@
+import exp from "constants";
 
 export interface Employee {
     id: number;
     name: string;
     department: Department;
+    country: string;
     remainingHolidays: number;
   }
 
@@ -26,3 +28,15 @@ export enum Department {
     maxConsecutiveDays: number;
     blackoutPeriods: { start: Date; end: Date }[];
   }
+
+export interface Holiday {
+  date: Date;
+  localName: string;
+  name: string;
+  countryCode: string;
+  fixed: boolean;
+  global: boolean;
+  counties: null;
+  launchYear: null;
+  types: string[];
+}
