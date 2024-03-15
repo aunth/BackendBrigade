@@ -1,6 +1,6 @@
 
 import { Employee, HolidayRequest } from '../types/types';
-import { getEmployees, getHolidayRequests } from '../utils/utils';
+import { getEmployees, getHolidayRequests } from '../utils/dataManager';
 import express, { Request, Response } from 'express';
 
 const router = express.Router();

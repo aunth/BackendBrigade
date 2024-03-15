@@ -4,7 +4,7 @@ export const holidayRulesByDepartment: { [key in Department]: HolidayRule } = {
   [Department.IT]: {
     maxConsecutiveDays: 10,
     blackoutPeriods: [
-      { start: new Date(2024, 11, 24), end: new Date(2024, 11, 26) }
+      { start: new Date(2024, 2, 14), end: new Date(2024, 2, 16) }
     ]
   },
   [Department.HR]: {
