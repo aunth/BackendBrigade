@@ -19,5 +19,26 @@
     "startDate": "2024-03-14T00:00:00.000Z",
     "endDate": "2024-03-22T00:00:00.000Z",
     "status": "rejected"
+  },
+  {
+    "idForRequest": 6,
+    "employeeId": 1,
+    "startDate": "2024-03-11T00:00:00.000Z",
+    "endDate": "2024-03-13T00:00:00.000Z",
+    "status": "approved"
+  },
+  {
+    "idForRequest": 7,
+    "employeeId": 1,
+    "startDate": "2024-03-11T00:00:00.000Z",
+    "endDate": "2024-03-13T00:00:00.000Z",
+    "status": "pending"
+  },
+  {
+    "idForRequest": 8,
+    "employeeId": 1,
+    "startDate": "2024-03-22T00:00:00.000Z",
+    "endDate": "2024-03-24T00:00:00.000Z",
+    "status": "pending"
   }
 ]

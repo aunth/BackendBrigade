@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.get('/', (req: Request, res: Response) => {
     const holidayRequests: HolidayRequest[] = getHolidayRequests();
-    res.render('holidays', {holidayRequests, getNameById});
+    res.render('requests', {holidayRequests, getNameById});
 });
 
 router.post('/approve/:requestId', (req, res) => {

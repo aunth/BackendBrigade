@@ -25,13 +25,13 @@
 </body>
 <script>
     function approveRequest(requestId) {
-        fetch(`/holidays/approve/${requestId}`, { method: 'POST' })
+        fetch(`/requests/approve/${requestId}`, { method: 'POST' })
             .then(response => location.reload())
             .catch(error => console.error('Error:', error));
     }
     
     function rejectRequest(requestId) {
-        fetch(`holidays/reject/${requestId}`, { method: 'POST' })
+        fetch(`requests/reject/${requestId}`, { method: 'POST' })
             .then(response => location.reload())
             .catch(error => console.error('Error:', error));
     }

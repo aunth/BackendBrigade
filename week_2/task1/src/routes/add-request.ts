@@ -88,7 +88,7 @@ router.post('/',  async(req: Request, res: Response) => {
     holidayRequests.push(newRequest);
     saveHolidayRequests(holidayRequests);
 
-    res.redirect('/holidays');
+    res.redirect('/requests');
 
 });
 
