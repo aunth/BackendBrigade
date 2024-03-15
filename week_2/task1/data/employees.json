@@ -1,23 +1,24 @@
 [
-  {
-    "id": 1,
-    "name": "John Doe",
-    "department": "IT",
-    "country": "UA",
-    "remainingHolidays": 79
-  },
-  {
-    "id": 2,
-    "name": "Jane Smith",
-    "department": "HR",
-    "country": "IT",
-    "remainingHolidays": 22
-  },
-  {
-    "id": 3,
-    "name": "John Smith",
-    "department": "HR",
-    "country": "UA",
-    "remainingHolidays": 15
-  }
-]
+	{
+	  "id": 1,
+	  "name": "John Doe",
+	  "department": "IT",
+	  "country": "UA",
+	  "remainingHolidays": 10
+	},
+	{
+	  "id": 2,
+	  "name": "Jane Smith",
+	  "department": "HR",
+	  "country": "IT",
+	  "remainingHolidays": 20
+	}, 
+	{
+		"id": 3,
+		"name": "John Smith",
+		"departament": "HR",
+		"country": "UA",
+		"remainingHolidays": 15
+	}
+  ]
+  

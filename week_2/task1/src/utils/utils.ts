@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 import { Employee, HolidayRequest} from '../types/types';
 import * as fs from 'fs';
@@ -69,6 +70,10 @@ function updateHolidayRequestStatus(requestId: number, status: 'pending' | 'appr
       console.error('Error updating holiday request status:', error);
   }
 }
+=======
+import { getEmployees } from './dataManager';
+import { Employee} from '../types/types';
+>>>>>>> 6aa8373927e717bdfad656e385819d9df56fbc6c
 
 function updateEmployeeRemainingHolidays(employeeId: number, takenDays: number) {
   try {
@@ -207,18 +212,6 @@ export function getCountryById(id: number): string {
   return employee ? employee.country : "";
 }
 
-export async function getNextPublicHolidays(countryCode: string) {
-  try {
-    const response = await axios.get(`https://date.nager.at/api/v3/NextPublicHolidays/${countryCode}`);
-    return response.data;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-        console.error('Error fetching public holidays:', error.message);
-        console.error('Response status:', error.response?.status);
-        console.error('Response data:', error.response?.data);
-    } else {
-        console.error('An unexpected error occurred:', error);
-    }
-    return []; 
-  }
+export function findEmploee(employees: Employee[], empId: number){
+  return employees.find(emp => emp.id === empId);
 }
