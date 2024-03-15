@@ -1,5 +1,3 @@
-import exp from "constants";
-
 export interface Employee {
     id: number;
     name: string;
@@ -30,7 +28,7 @@ export enum Department {
   }
 
 export interface Holiday {
-  date: Date;
+  date: string;
   localName: string;
   name: string;
   countryCode: string;

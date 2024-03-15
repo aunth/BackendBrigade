@@ -1,9 +1,8 @@
 import express, {Response, Request} from 'express';
-import { holidayRulesByDepartment } from '../../data/dataStore';
-import { HolidayRequest, Employee, Holiday } from '../types/types';
-import { getEmployees, getHolidayRequests, saveHolidayRequest, getNextPublicHolidays, getCountryById } from '../utils/utils';
-import { error } from 'console';
-
+import { HolidayRequest} from '../types/types';
+import { getEmployees, getHolidayRequests, saveHolidayRequest} from '../utils/dataManager';
+import { validateRequestDates, checkHolidayConflicts, isDuplicateRequest, getPublicHolidays} from '../utils/holidayManager';
+import { findEmploee } from '../utils/utils';
 
 const router = express.Router();
 
@@ -11,25 +10,15 @@ const router = express.Router();
 router.get('/', async(req: Request, res: Response) => {
     const error = req.query.error;
     const employeeId = req.query.employeeId as string
-    const countryCode = getCountryById(Number(employeeId));
-    const publicHolidays = await getNextPublicHolidays(countryCode);
+    const publicHolidays = await getPublicHolidays(employeeId);
     res.render('add-request', {error: error, publicHolidays: publicHolidays, employeeId: employeeId});
 });
 
 router.post('/',  async(req: Request, res: Response) => {
 
     const {employeeId, startDate, endDate} = req.body;
-    const empId = Number(employeeId);
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    console.log("start", start);
-    console.log("end", end);
-    const countryCode = getCountryById(empId);
-    console.log("countryCode", countryCode);
-    const publicHolidays = await getNextPublicHolidays(countryCode);
-    console.log('publicHolidays', publicHolidays);
+   
     
-
     if (!employeeId || !startDate || !endDate) {
         return res.redirect(`add-request?error=Invalid input&employeeId=${employeeId}`);
     }
@@ -38,60 +27,41 @@ router.post('/',  async(req: Request, res: Response) => {
     let holidayRequests = getHolidayRequests();
     
 
-    const employee = employees.find(emp => emp.id === empId)
+    const employee = findEmploee(employees, Number(employeeId));
     if (!employee){
         return res.redirect(`/add-request?error=Employee not found&employeeId=${employeeId}`);
     }
 
-
-
-    if (start > end) {
-        return res.redirect(`/add-request?error=Start date must be before end date&employeeId=${employeeId}`);
-    }
-
-    const dayDifference = (end.getTime() - start.getTime()) / (1000 * 3600 * 24) + 1;
-    if (dayDifference > holidayRulesByDepartment[employee.department].maxConsecutiveDays) {
-        return res.redirect(`/add-request?error=Exceeds maximum consecutive holiday days&employeeId=${employeeId}`);
-    } else if (employee.remainingHolidays < dayDifference) {
-        return res.redirect(`/add-request?error=Insufficient remaining holiday days&employeeId=${employeeId}`);
-    }
-
-    // Check for blackout periods
-    const inBlackoutPeriod = holidayRulesByDepartment[employee.department].blackoutPeriods.some(period => {
-        const blackoutStart = new Date(period.start);
-        const blackoutEnd = new Date(period.end);
-        return (start <= blackoutEnd && start >= blackoutStart) || (end <= blackoutEnd && end >= blackoutStart);
-    });
-
-    if (inBlackoutPeriod) {
-        return res.redirect(`/add-request?error=Request falls within a blackout period&employeeId=${employeeId}`);
+    const validationError = validateRequestDates(startDate, endDate, employee);
+    if (validationError) {
+        return res.redirect(`/add-request?error=${encodeURIComponent(validationError)}&employeeId=${employeeId}`);
     }
 
     // Check for conflicts with public holidays
-    const holidayConflict = publicHolidays.filter((holiday: Holiday) => {
-        const holidayDate = new Date(holiday.date);
-        console.log('holidayDate', holidayDate);
-        return start <= holidayDate && holidayDate <= end;
-    });
 
+    const holidayConflict = await checkHolidayConflicts(startDate, endDate, employeeId);
     if (holidayConflict) {
-        // Logic to suggest alternative dates goes here
-        return res.redirect(`/add-request?error=Request conflicts with a public holiday. Please choose different dates.&employeeId=${employeeId}`);
+        return res.redirect(`/add-request?error=${encodeURIComponent(holidayConflict)}&employeeId=${employeeId}`);
     }
+
 
     const newRequest: HolidayRequest = {
         idForRequest: holidayRequests.length + 1,
-        employeeId: empId,
-        startDate: start,
-        endDate: end,
+        employeeId: Number(employeeId),
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
         status: 'pending',
     };
+
+    if (isDuplicateRequest(newRequest)) {
+        return res.redirect(`/add-request?error=Duplicate holiday request detected.&employeeId=${employeeId}`);
+      } else {
+        saveHolidayRequest(newRequest);
+      }
 
     console.log(`User with ${newRequest.employeeId} id create new Holiday Request ` + 
                 `from ${newRequest.startDate.toLocaleDateString('en-CA')} ` + 
                 `to ${newRequest.endDate.toLocaleDateString('en-CA')}`)
-
-    saveHolidayRequest(newRequest);
 
     res.redirect('/holidays');
 
