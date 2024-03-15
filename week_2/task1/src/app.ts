@@ -2,7 +2,7 @@ import express from 'express';
 import path from 'path';
 
 const app = express();
-const port = 3000;
+const port = 3001;
 
 // Middlewares
 app.use(express.urlencoded({ extended: true }));
@@ -25,8 +25,10 @@ import employeesRouter from './routes/employees';
 import holidaysRouter from './routes/holidays';
 import addRequestsRouter from './routes/add-request';
 import updateRequestRouter from './routes/update-request';
+import deleteRouter from './routes/deleteRequest';
 
 app.use('/', mainRouter)
+app.use('/delete', deleteRouter);
 app.use('/employees', employeesRouter);
 app.use('/holidays', holidaysRouter);
 app.use('/add-request', addRequestsRouter);

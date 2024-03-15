@@ -20,8 +20,7 @@ router.post('/request-action', (req, res) => {
         // Logic to update a request
         break;
       case 'delete':
-        // Logic to delete a request
-        break;
+        return res.redirect(`/delete?employeeId=${encodeURIComponent(employeeId)}`);
       default:
         // Handle unknown action
         res.status(400).send('Unknown action');

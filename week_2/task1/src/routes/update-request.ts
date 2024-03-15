@@ -1,7 +1,7 @@
 import express, {Response, Request} from 'express';
 import { holidayRulesByDepartment } from '../../data/dataStore';
 import { HolidayRequest } from '../types/types';
-import { getEmployees, getHolidayRequests, saveHolidayRequest, getNextPublicHolidays } from '../utils/utils';
+import { getEmployees, getHolidayRequests, getNextPublicHolidays } from '../utils/utils';
 import { error } from 'console';
 import { renameSync } from 'fs';
 

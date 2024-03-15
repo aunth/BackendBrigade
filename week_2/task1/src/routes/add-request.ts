@@ -1,7 +1,7 @@
 import express, {Response, Request} from 'express';
-import { holidayRulesByDepartment } from '../../data/dataStore';
+import { holidayRulesByDepartment} from '../../data/dataStore';
 import { HolidayRequest, Employee, Holiday } from '../types/types';
-import { getEmployees, getHolidayRequests, saveHolidayRequest, getNextPublicHolidays, getCountryById } from '../utils/utils';
+import { getEmployees, getHolidayRequests, saveHolidayRequests, getNextPublicHolidays, getCountryById } from '../utils/utils';
 import { error } from 'console';
 
 
@@ -22,13 +22,8 @@ router.post('/',  async(req: Request, res: Response) => {
     const empId = Number(employeeId);
     const start = new Date(startDate);
     const end = new Date(endDate);
-    console.log("start", start);
-    console.log("end", end);
     const countryCode = getCountryById(empId);
-    console.log("countryCode", countryCode);
-    const publicHolidays = await getNextPublicHolidays(countryCode);
-    console.log('publicHolidays', publicHolidays);
-    
+    const publicHolidays = await getNextPublicHolidays(countryCode);    
 
     if (!employeeId || !startDate || !endDate) {
         return res.redirect(`add-request?error=Invalid input&employeeId=${employeeId}`);
@@ -42,7 +37,6 @@ router.post('/',  async(req: Request, res: Response) => {
     if (!employee){
         return res.redirect(`/add-request?error=Employee not found&employeeId=${employeeId}`);
     }
-
 
 
     if (start > end) {
@@ -70,17 +64,17 @@ router.post('/',  async(req: Request, res: Response) => {
     // Check for conflicts with public holidays
     const holidayConflict = publicHolidays.filter((holiday: Holiday) => {
         const holidayDate = new Date(holiday.date);
-        console.log('holidayDate', holidayDate);
         return start <= holidayDate && holidayDate <= end;
     });
 
-    if (holidayConflict) {
+
+    if (holidayConflict > 0) {
         // Logic to suggest alternative dates goes here
         return res.redirect(`/add-request?error=Request conflicts with a public holiday. Please choose different dates.&employeeId=${employeeId}`);
     }
 
     const newRequest: HolidayRequest = {
-        idForRequest: holidayRequests.length + 1,
+        idForRequest: holidayRequests.reduce((max, request) => Math.max(max, request.idForRequest), 0) + 1,
         employeeId: empId,
         startDate: start,
         endDate: end,
@@ -91,7 +85,8 @@ router.post('/',  async(req: Request, res: Response) => {
                 `from ${newRequest.startDate.toLocaleDateString('en-CA')} ` + 
                 `to ${newRequest.endDate.toLocaleDateString('en-CA')}`)
 
-    saveHolidayRequest(newRequest);
+    holidayRequests.push(newRequest);
+    saveHolidayRequests(holidayRequests);
 
     res.redirect('/holidays');
 
