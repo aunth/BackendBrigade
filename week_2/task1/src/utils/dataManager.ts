@@ -43,6 +43,20 @@ export function getEmployees(): Employee[] {
     }
   }
 
-export function updateHolidayRequest(requestID: number, updatedRequest: HolidayRequest) {
-  // implementation...
-}
+  export function updateHolidayRequest(requestID: number, updatedRequest: HolidayRequest) {
+    const holidayRequests = getHolidayRequests();
+    const index = holidayRequests.findIndex(request => request.idForRequest === requestID);
+    
+    if (index === -1) {
+      console.error('Request not found');
+      return;
+    }
+    
+    holidayRequests[index] = updatedRequest;
+    
+    try {
+      fs.writeFileSync(holidaysFilename, JSON.stringify(holidayRequests, null, 2), 'utf-8');
+    } catch (error) {
+        console.error('Error writing updated holiday requests data:', error);
+          }
+  }

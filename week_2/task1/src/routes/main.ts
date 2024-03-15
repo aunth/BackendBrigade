@@ -1,5 +1,6 @@
 
 import express, {Response, Request} from 'express';
+import { getNameById } from '../utils/utils'
 
 
 const router = express.Router();
@@ -11,6 +12,14 @@ router.get('/', (req: Request, res: Response) => {
 
 router.post('/request-action', (req, res) => {
   const { employeeId, action } = req.body;
+
+  const employeeExists = getNameById(Number(employeeId));
+
+  if (!employeeExists) {
+    res.status(404).send("Employee ID does not exist.");
+    return;
+  }
+
   switch (action) {
       case 'create':
           res.redirect(`/add-request?employeeId=${encodeURIComponent(employeeId)}`);

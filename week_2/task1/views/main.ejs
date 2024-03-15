@@ -3,16 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <title>Employee Holiday Requests</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
+    <div class="container">
+        <div class="form-container">
     <h1>Manage Employee Holiday Requests</h1>
-    <form action="/request-action" method="post">
-        <label for="employeeId">Employee ID:</label>
-        <input type="text" id="employeeId" name="employeeId" required>
+</div>
+</div>
+    <form clas="main-form" action="/request-action" method="post">
+        <label class="main-label" for="employeeId">Employee ID:</label>
+        <input class="main-input" type="text" id="employeeId" name="employeeId" required>
         <br>
-        <button type="submit" name="action" value="create">Create Request</button>
-        <button type="submit" name="action" value="update">Update Request</button>
-        <button type="submit" name="action" value="delete">Delete Request</button>
+        <button class= "main-btn" type="submit" name="action" value="create">Create Request</button>
+        <button class= "main-btn" type="submit" name="action" value="update">Update Request</button>
+        <button class= "main-btn" type="submit" name="action" value="delete">Delete Request</button>
     </form>
 </body>
 </html>
