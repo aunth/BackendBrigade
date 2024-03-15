@@ -1,9 +1,6 @@
-<<<<<<< HEAD
 
 import { Employee, HolidayRequest} from '../types/types';
 import * as fs from 'fs';
-import axios, { AxiosError } from 'axios';
-import { resourceUsage } from 'process';
 
 
 export const employeesFilename = './data/employees.json';
@@ -70,10 +67,6 @@ function updateHolidayRequestStatus(requestId: number, status: 'pending' | 'appr
       console.error('Error updating holiday request status:', error);
   }
 }
-=======
-import { getEmployees } from './dataManager';
-import { Employee} from '../types/types';
->>>>>>> 6aa8373927e717bdfad656e385819d9df56fbc6c
 
 function updateEmployeeRemainingHolidays(employeeId: number, takenDays: number) {
   try {
