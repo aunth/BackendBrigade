@@ -1,6 +1,8 @@
 
 import express, {Response, Request} from 'express'
-import { getEmployees, getHolidayRequests, deleteRequest, getNameById } from '../utils/utils';
+import { getNameById } from '../utils/utils';
+import { getEmployees, getHolidayRequests, deleteRequest } from '../utils/dataManager';
+import { HolidayRequest } from '../types/types';
 
 const router = express.Router();
 
@@ -11,9 +13,12 @@ router.get('/', async(req: Request, res: Response) => {
 	if (employee.length == 0) {
 		return res.render('deleteRequest', {error: "There is not user with this id"});
 	}
-	const holidayRequests = getHolidayRequests(employee[0].id);
+	const allRequests: HolidayRequest[] = getHolidayRequests();
 
-	res.render('deleteRequest', {holidayRequests: holidayRequests, getNameById});
+    const employeeHolidayRequests = allRequests.filter(request => request.employeeId == employee[0].id);
+
+
+	res.render('deleteRequest', {holidayRequests: employeeHolidayRequests, getNameById});
 })
 
 router.delete('/:id', async (req: Request, res: Response) => {

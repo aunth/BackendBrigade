@@ -66,7 +66,7 @@ router.put('/', async(req: Request, res: Response) => {
                 `to ${updatedRequest.endDate.toLocaleDateString('en-CA')}`);
 
 
-    res.json({ success: true, redirectUrl: '/holidays' })
+    res.json({ success: true, redirectUrl: '/requests' })
 });
 
 export default router;

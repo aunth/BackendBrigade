@@ -19,17 +19,11 @@ router.post('/request-action', (req, res) => {
           res.redirect(`/update-request?employeeId=${encodeURIComponent(employeeId)}`);
           return;
       case 'delete':
-<<<<<<< HEAD
-        return res.redirect(`/delete?employeeId=${encodeURIComponent(employeeId)}`);
-=======
-          // Logic to delete a request
-          return;
->>>>>>> 6aa8373927e717bdfad656e385819d9df56fbc6c
+          return res.redirect(`/delete?employeeId=${encodeURIComponent(employeeId)}`);
       default:
           res.status(400).send('Unknown action');
           return;
   }
-
 });
 
 export default router;

@@ -63,7 +63,7 @@ router.post('/',  async(req: Request, res: Response) => {
                 `from ${newRequest.startDate.toLocaleDateString('en-CA')} ` + 
                 `to ${newRequest.endDate.toLocaleDateString('en-CA')}`)
 
-    res.redirect('/holidays');
+    res.redirect('/requests');
 
 });
 

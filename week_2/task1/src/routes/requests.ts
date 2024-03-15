@@ -1,6 +1,8 @@
 
 import express, {Response, Request} from 'express';
-import { getNameById, getHolidayRequests, approveRequest, rejectRequest} from '../utils/utils';
+import { getNameById } from '../utils/utils';
+import { getHolidayRequests } from '../utils/dataManager';
+import { approveRequest, rejectRequest } from '../utils/holidayManager';
 import { HolidayRequest } from '../types/types';
 
 const router = express.Router();

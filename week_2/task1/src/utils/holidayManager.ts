@@ -3,6 +3,12 @@ import { Employee, Holiday, HolidayRequest } from '../types/types';
 import { getEmployees, getHolidayRequests } from './dataManager';
 import { getCountryById } from './utils';
 import { holidayRulesByDepartment } from '../../data/dataStore';
+import { getDaysNum } from '../utils/utils';
+import { updateEmployeeRemainingHolidays } from './dataManager';
+import * as fs from 'fs';
+
+export const employeesFilename = './data/employees.json';
+export const holidaysFilename = './data/holidays.json';
 
 
 export async function getNextPublicHolidays(countryCode: string) {
@@ -51,6 +57,25 @@ export function validateRequestDates(startDate: string, endDate: string, employe
     return null;
 }
 
+function updateHolidayRequestStatus(requestId: number, status: 'pending' | 'approved' | 'rejected') {
+  try {
+      const rawData = fs.readFileSync(holidaysFilename, 'utf-8');
+      let jsonData: HolidayRequest[] = JSON.parse(rawData);
+      
+      const requestIndex = jsonData.findIndex(request => request.idForRequest === requestId);
+      
+      if (requestIndex !== -1) {
+          jsonData[requestIndex].status = status;
+          fs.writeFileSync(holidaysFilename, JSON.stringify(jsonData, null, 2));
+          console.log(`Holiday request ${requestId} status updated to ${status}.`);
+      } else {
+          console.error(`Holiday request with ID ${requestId} not found.`);
+      }
+  } catch (error) {
+      console.error('Error updating holiday request status:', error);
+  }
+}
+
 export async function getPublicHolidays(employeeId: string) {
     const empId = Number(employeeId);
     const countryCode = getCountryById(empId);
@@ -96,4 +121,46 @@ export function isDuplicateRequest(newRequest: HolidayRequest): boolean {
       return false;
     });
     return duplicate;
+}
+
+export function saveHolidayRequests(requests: HolidayRequest[]) {
+  try {
+    const jsonData = JSON.stringify(requests, null, 2);
+    fs.writeFileSync(holidaysFilename, jsonData);
+    console.log(`Holiday requests saved to ${holidaysFilename}`);
+  } catch (error) {
+    console.error(`Error saving holiday requests to ${holidaysFilename}:`, error);
+  }
+}
+
+export function rejectRequest(requestId: number) {
+  updateHolidayRequestStatus(requestId, 'rejected');
+  console.log(`Request with ${requestId} was rejected`);
+}
+
+
+export function approveRequest(requestId: number) {
+  const holidayRequest = getHolidayRequests(requestId);
+
+  if (holidayRequest.length == 0) {
+      console.error('Holiday request not found');
+      return;
+  }
+
+  let employee = getEmployees(holidayRequest[0].employeeId);
+
+  if (!employee) {
+      console.error('Employee not found');
+      return;
+  }
+
+  const takenDays = getDaysNum(holidayRequest[0]);
+
+  if (takenDays >= 0) {
+      updateHolidayRequestStatus(requestId, 'approved');
+      updateEmployeeRemainingHolidays(employee[0].id, takenDays);
+      console.log('Request approved');
+  } else {
+      console.log('Insufficient remaining holidays');
+  }
 }
