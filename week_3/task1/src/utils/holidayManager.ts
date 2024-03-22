@@ -1,14 +1,19 @@
 import axios from 'axios';
-import { Employee, Holiday, HolidayRequest } from '../types/types';
-import { getEmployees, getHolidayRequests } from './dataManager';
+import { Employee, Holiday, HolidayRequest} from '../types/types';
+//import { getEmployees, getHolidayRequests } from './dataManager';
 import { getCountryById } from './utils';
 import { holidayRulesByDepartment } from '../../data/dataStore';
 import { getDaysNum } from '../utils/utils';
-import { updateEmployeeRemainingHolidays } from './dataManager';
+//import { updateEmployeeRemainingHolidays } from './dataManager';
 import * as fs from 'fs';
 
 export const employeesFilename = './data/employees.json';
 export const holidaysFilename = './data/holidays.json';
+
+import { requestController } from '../controllers/request.controller';
+import { employeeController } from '../controllers/employee.controller';
+import { departmentController } from '../controllers/department.controller';
+import { blackoutPeriodsController } from '../controllers/blackoutperiods.controller';
 
 
 export async function getNextPublicHolidays(countryCode: string) {
@@ -27,58 +32,73 @@ export async function getNextPublicHolidays(countryCode: string) {
     }
 }
 
-export function validateRequestDates(startDate: string, endDate: string, employee: Employee) {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    
-    if (start > end) {
-        return 'Start date must be before end date';
-    }
+export async function validateRequestDates(startDate: string, endDate: string, employee: Employee) {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  console.log("validateRequestDates", start);
+  console.log("validateRequestDates", end);
+
+  if (start > end) {
+      return 'Start date must be before end date';
+  }
+
+  const dayDifference = (end.getTime() - start.getTime()) / (1000 * 3600 * 24) + 1;
+  console.log(dayDifference);
+
+  const holidayRulesByDepartment = await departmentController.getDepartmentById(employee.department_id)
+
+  if (dayDifference > holidayRulesByDepartment.max_consecutive_days) {
+      return 'Exceeds maximum consecutive holiday days';
+  } else if (employee.remaining_holidays < dayDifference) {
+      return 'Insufficient remaining holiday days';
+  }
   
-    const dayDifference = (end.getTime() - start.getTime()) / (1000 * 3600 * 24) + 1;
-    if (dayDifference > holidayRulesByDepartment[employee.department].maxConsecutiveDays) {
-        return 'Exceeds maximum consecutive holiday days';
-    } else if (employee.remainingHolidays < dayDifference) {
-        return 'Insufficient remaining holiday days';
-    }
-  
-    // Check for blackout periods
-    const hasBlackoutPeriod = holidayRulesByDepartment[employee.department].blackoutPeriods.some(period => {
-      const blackoutStart = new Date(period.start);
-      const blackoutEnd = new Date(period.end);
-     
-      return (start <= blackoutEnd && start >= blackoutStart) || (end <= blackoutEnd && end >= blackoutStart);
-    });
+  // Check for blackout periods
+  const blackoutPeriods = await blackoutPeriodsController.getBlackoutPeriods(holidayRulesByDepartment.id);
+  console.log('blackoutPeriods', blackoutPeriods);
+  const hasBlackoutPeriod = blackoutPeriods.some(period => {
+    const blackoutStart = new Date(period.blackout_start_date.toLocaleDateString('en-CA'));
+    const blackoutEnd = new Date(period.blackout_end_date.toLocaleDateString('en-CA'));
+
+    console.log("start", start);
+    console.log("end", end);
+    console.log("blackoutStart", blackoutStart);
+    console.log("blackoutEnd", blackoutEnd);
+
+   
+    return (start <= blackoutEnd && start >= blackoutStart) || (end <= blackoutEnd && end >= blackoutStart) || (start <= blackoutEnd && end >= blackoutStart)
+  });
   
     if (hasBlackoutPeriod) {
-      return 'Request falls within a blackout period';
+      return `Request falls within a blackout period`; ///////////// check it (add info about blackout period) //////////
     }
     
     return null;
 }
 
-function updateHolidayRequestStatus(requestId: number, status: 'pending' | 'approved' | 'rejected') {
-  try {
-      const rawData = fs.readFileSync(holidaysFilename, 'utf-8');
-      let jsonData: HolidayRequest[] = JSON.parse(rawData);
-      
-      const requestIndex = jsonData.findIndex(request => request.idForRequest === requestId);
-      
-      if (requestIndex !== -1) {
-          jsonData[requestIndex].status = status;
-          fs.writeFileSync(holidaysFilename, JSON.stringify(jsonData, null, 2));
-          console.log(`Holiday request ${requestId} status updated to ${status}.`);
-      } else {
-          console.error(`Holiday request with ID ${requestId} not found.`);
-      }
-  } catch (error) {
-      console.error('Error updating holiday request status:', error);
-  }
-}
+//function updateHolidayRequestStatus(requestId: number, status: 'pending' | 'approved' | 'rejected') {
+//  try {
+//      const rawData = fs.readFileSync(holidaysFilename, 'utf-8');
+//      let jsonData: HolidayRequest[] = JSON.parse(rawData);
+//      
+//      const requestIndex = jsonData.findIndex(request => request.idForRequest === requestId);
+//      
+//      if (requestIndex !== -1) {
+//          jsonData[requestIndex].status = status;
+//          fs.writeFileSync(holidaysFilename, JSON.stringify(jsonData, null, 2));
+//          console.log(`Holiday request ${requestId} status updated to ${status}.`);
+//      } else {
+//          console.error(`Holiday request with ID ${requestId} not found.`);
+//      }
+//  } catch (error) {
+//      console.error('Error updating holiday request status:', error);
+//  }
+//}
 
 export async function getPublicHolidays(employeeId: string) {
     const empId = Number(employeeId);
-    const countryCode = getCountryById(empId);
+    const countryCode = await getCountryById(empId);
     return await getNextPublicHolidays(countryCode);
 }
 
@@ -103,19 +123,18 @@ export async function checkHolidayConflicts(startDate: Date, endDate: Date, empl
     }
 }
 
-export function isDuplicateRequest(newRequest: HolidayRequest): boolean {
-    const holidayRequests = getHolidayRequests();
+export async function isDuplicateRequest(newRequest: HolidayRequest): Promise<boolean> {
+    const holidayRequests = await requestController.getAllRequests();
   
     const duplicate = holidayRequests.some(request => {
-      if (request.employeeId === newRequest.employeeId) {
+      if (request.employee_id === newRequest.employee_id) {
   
-        const existingStartDate = new Date(request.startDate);
-        const existingEndDate = new Date(request.endDate);
-        const newStartDate = new Date(newRequest.startDate);
-        const newEndDate = new Date(newRequest.endDate);
+        const existingStartDate = new Date(request.start_date.toLocaleDateString('en-CA'));
+        const existingEndDate = new Date(request.end_date.toLocaleDateString('en-CA'));
+        const newStartDate = new Date(newRequest.start_date);
+        const newEndDate = new Date(newRequest.end_date);
   
         const isExactMatch = existingStartDate.getTime() === newStartDate.getTime() && existingEndDate.getTime() === newEndDate.getTime();
-  
         return isExactMatch;
       }
       return false;
@@ -133,32 +152,36 @@ export function saveHolidayRequests(requests: HolidayRequest[]) {
   }
 }
 
-export function rejectRequest(requestId: number) {
-  updateHolidayRequestStatus(requestId, 'rejected');
-  console.log(`Request with ${requestId} was rejected`);
-}
+//export function rejectRequest(requestId: number) {
+//  updateHolidayRequestStatus(requestId, 'rejected');
+//  console.log(`Request with ${requestId} was rejected`);
+//}
 
 
-export function approveRequest(requestId: number) {
-  const holidayRequest = getHolidayRequests(requestId);
+export async function approveRequest(requestId: string) {
+  //const holidayRequest = getHolidayRequests(requestId);
+  const holidayRequest =  await requestController.getRequest(requestId);
 
-  if (holidayRequest.length == 0) {
+  if (!holidayRequest) {
       console.error('Holiday request not found');
       return;
   }
 
-  let employee = getEmployees(holidayRequest[0].employeeId);
+  //let employee = getEmployees(holidayRequest[0].employeeId);
+  const employee = await employeeController.getEmployee(holidayRequest.employee_id)
 
   if (!employee) {
       console.error('Employee not found');
       return;
   }
 
-  const takenDays = getDaysNum(holidayRequest[0]);
+  const takenDays = getDaysNum(holidayRequest); ////////////////////////////////////////////////////////////////
+  console.log("takenDays", takenDays);
 
   if (takenDays >= 0) {
-      updateHolidayRequestStatus(requestId, 'approved');
-      updateEmployeeRemainingHolidays(employee[0].id, takenDays);
+      //updateHolidayRequestStatus(requestId, 'approved');
+      //await requestController.updateRequestStatus(requestId, 'approved')
+      await employeeController.updateEmployeeRemainingHolidays(employee.id, takenDays);
       console.log('Request approved');
   } else {
       console.log('Insufficient remaining holidays');

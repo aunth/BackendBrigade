@@ -1,6 +1,7 @@
 
 import { Employee, HolidayRequest} from '../types/types';
 import { getEmployees } from './dataManager';
+import { employeeController } from '../controllers/employee.controller';
 
 export const employeesFilename = './data/employees.json';
 export const holidaysFilename = './data/holidays.json';
@@ -11,31 +12,32 @@ export function increaseUserHolidays(employeeId: number, daysNum: number) {
   const user = employees.find(employee => employee.id === employeeId);
 
   if (user) {
-    user.remainingHolidays += daysNum;
+    user.remaining_holidays += daysNum;
   }
   return employees;
 }
 
 export function getDaysNum(request: HolidayRequest) {
-  const endDate = new Date(request.endDate);
-  const startDate = new Date(request.startDate);
+  const endDate = new Date(request.end_date);
+  const startDate = new Date(request.start_date);
 
   return (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24) + 1
 }
 
 
-export function getNameById(id: number): string | undefined {
-    const employees: Employee[] = getEmployees();
-    const user = employees.find(employee => employee.id === id);
+export async function getNameById(id: number): Promise<string | undefined> {
+  const employees: Employee[] = await employeeController.getEmployees();
   
-    if (!user) {
+  const user = employees.find(employee => employee.id === id);
+  
+  if (!user) {
       return undefined;
-    }
-    return user.name;
+  }
+  return user.name;
 }
 
-export function getCountryById(id: number): string {
-  const employees: Employee[] = getEmployees();
+export async function getCountryById(id: number): Promise<string> {
+  const employees: Employee[] = await employeeController.getEmployees();
   const employee = employees.find(employee => employee.id === id);
   return employee ? employee.country : "";
 }

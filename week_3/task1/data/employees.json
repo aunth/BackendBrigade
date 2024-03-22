@@ -4,14 +4,14 @@
     "name": "John Doe",
     "department": "IT",
     "country": "UA",
-    "remainingHolidays": 4
+    "remainingHolidays": 15
   },
   {
     "id": 2,
     "name": "Jane Smith",
     "department": "HR",
     "country": "IT",
-    "remainingHolidays": 29
+    "remainingHolidays": 24
   },
   {
     "id": 3,

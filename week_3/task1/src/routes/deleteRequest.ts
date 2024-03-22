@@ -1,31 +1,38 @@
 
 import express, {Response, Request} from 'express'
 import { getNameById } from '../utils/utils';
-import { getEmployees, getHolidayRequests, deleteRequest } from '../utils/dataManager';
-import { HolidayRequest } from '../types/types';
+//import { getEmployees, getHolidayRequests} from '../utils/dataManager';
+import { HolidayRequest} from '../types/types';
+
+import { requestController } from '../controllers/request.controller';
+import { employeeController } from '../controllers/employee.controller';
+import { departmentController } from '../controllers/department.controller';
+import { blackoutPeriodsController } from '../controllers/blackoutperiods.controller';
 
 const router = express.Router();
 
 router.get('/', async(req: Request, res: Response) => {
-	const employees = getEmployees();
+	const employees = await employeeController.getEmployees();
 	const employee = employees.filter((emp) => emp.id === Number(req.query.employeeId));
 
 	if (employee.length == 0) {
 		return res.render('deleteRequest', {error: "There is not user with this id"});
 	}
-	const allRequests: HolidayRequest[] = getHolidayRequests();
+	const allRequests: HolidayRequest[] = await requestController.getAllRequests();
 
-    const employeeHolidayRequests = allRequests.filter(request => request.employeeId == employee[0].id);
+    const employeeHolidayRequests = allRequests.filter(request => request.employee_id == employee[0].id);
+
+	const employeeName = await getNameById(employee[0].id);
 
 
-	res.render('deleteRequest', {holidayRequests: employeeHolidayRequests, getNameById});
+	res.render('deleteRequest', {holidayRequests: employeeHolidayRequests, employeeName: employeeName});
 })
 
 router.delete('/:id', async (req: Request, res: Response) => {
     try {
         const requestId = req.params.id;
 
-        const success = deleteRequest(Number(requestId));
+        const success = await requestController.deleteRequest(Number(requestId));
 
         if (success) {
             res.status(200).json({ message: 'Request was deleted' });

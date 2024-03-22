@@ -12,13 +12,10 @@ const router = express.Router();
 Connector.connect();
 
 
-router.get('/', async (req: Request, res: Response) => {
-    res.render('main');
+router.post('/request-action', async (req, res) => {
+  const { employeeId, action } = req.body;
 
-    await dbWorker.getDepartmentsFromObject();
-    
-    await dbWorker.getEmployeesFromObject();
-});
+  const employeeExists = await getNameById(Number(employeeId));
 
 
 router.post('/request-action', async (req, res) => {
