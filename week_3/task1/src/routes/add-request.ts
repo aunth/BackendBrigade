@@ -3,6 +3,7 @@ import { HolidayRequest} from '../types/types';
 import { getEmployees, getHolidayRequests, saveHolidayRequest} from '../utils/dataManager';
 import { validateRequestDates, checkHolidayConflicts, isDuplicateRequest, getPublicHolidays} from '../utils/holidayManager';
 import { findEmploee } from '../utils/utils';
+import { Connector } from '../database_integration/db';
 
 const router = express.Router();
 

@@ -14,7 +14,6 @@ router.get('/', (req: Request, res: Response) => {
 
 router.post('/approve/:requestId', (req, res) => {
     const { requestId } = req.params;
-    console.log(1);
     approveRequest(Number(requestId));
     res.sendStatus(200); // You might want to send back a more meaningful response
 });
