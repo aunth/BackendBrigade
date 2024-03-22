@@ -3,6 +3,7 @@ import { HolidayRequest} from '../types/types';
 //import { getEmployees, getHolidayRequests, saveHolidayRequest} from '../utils/dataManager';
 import { validateRequestDates, checkHolidayConflicts, isDuplicateRequest, getPublicHolidays} from '../utils/holidayManager';
 import { findEmploee } from '../utils/utils';
+import { Connector } from '../database_integration/db';
 import { requestController } from '../controllers/request.controller';
 import { employeeController } from '../controllers/employee.controller';
 
@@ -12,7 +13,7 @@ const router = express.Router();
 
 router.get('/', async(req: Request, res: Response) => {
     const error = req.query.error;
-    const employeeId = req.query.employeeId as string
+    const employeeId = req.query.employeeId as string;
     const publicHolidays = await getPublicHolidays(employeeId);
     res.render('add-request', {error: error, publicHolidays: publicHolidays, employeeId: employeeId});
 });

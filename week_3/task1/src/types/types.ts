@@ -2,12 +2,13 @@
 export interface Employee {
     id: number;
     name: string;
+    department: DepartmentValues;
     department_id: number;
     country: string;
     remaining_holidays: number;
   }
 
-export enum Department {
+export enum DepartmentValues {
     IT = 'IT',
     HR = 'HR',
     FINANCE = 'Finance',

@@ -35,6 +35,7 @@ router.post('/approved/:requestId', async(req:Request, res:Response) => {
             return res.status(400).json({ error: 'Invalid action provided' });
         }
 
+
         await requestController.updateRequestStatus(action, requestId);
 
         res.sendStatus(200);
