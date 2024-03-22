@@ -2,11 +2,11 @@ import mongoose, { Document, Model } from 'mongoose';
 import { HolidayRequest } from '../types/types';
 import { Types } from 'mongoose';
 
-import { RequestModel } from './models';
+import { RequestInterface, RequestModel } from './models';
 
 export class RequestWorker {
 
-  async createRequest(data: HolidayRequest): Promise<Request> {
+  async createRequest(data: Partial<RequestInterface>): Promise<Request> {
     try {
       const newRequest = await RequestModel.create(data);
       console.log(`Request for employee ${data.employeeId} created successfully.`);
@@ -17,7 +17,7 @@ export class RequestWorker {
     }
   }
 
-  async readRequestById(id: string): Promise<Request | null> {
+  async readRequestById(id: Types.ObjectId): Promise<Request | null> {
     try {
       const request = await RequestModel.findById(id);
       return request;
@@ -27,7 +27,7 @@ export class RequestWorker {
     }
   }
 
-  async updateRequestById(id: string, data: Partial<Request>): Promise<Request | null> {
+  async updateRequestById(id: Types.ObjectId, data: Partial<Request>): Promise<Request | null> {
     try {
       const updatedRequest = await RequestModel.findByIdAndUpdate(id, data, { new: true });
 
@@ -44,7 +44,7 @@ export class RequestWorker {
     }
   }
 
-  async deleteRequestById(id: string): Promise<Request | null> {
+  async deleteRequestById(id: Types.ObjectId): Promise<Request | null> {
     try {
       const deletedRequest = await RequestModel.findByIdAndDelete(id);
 
@@ -71,7 +71,7 @@ export class RequestWorker {
     }
   }
 
-  async findRequestsByEmployeeId(employeeId: string): Promise<Request[]> {
+  async findRequestsByEmployeeId(employeeId: Types.ObjectId): Promise<Request[]> {
     try {
       const requests = await RequestModel.find({ employeeId });
       return requests;

@@ -1,7 +1,8 @@
 import mongoose, { Document, Model } from 'mongoose';
 import { DepartmentModel, Department, HolidayModel, Holiday } from './models'; // Assuming models.ts is in the same directory
-import { DepartmentValues, HolidayRule } from './../types/types';
+import { DepartmentValues, Employee, HolidayRule } from './../types/types';
 import { Types } from 'mongoose';
+import { employeeWorker } from './EmployeeWorker';
 
 
 class DepartmentWorker {
@@ -110,7 +111,7 @@ class DepartmentWorker {
 	}
   }
 
-  async deleteDepartment(departmentId: string): Promise<Department | null> {
+  async deleteDepartment(departmentId: Types.ObjectId): Promise<Department | null> {
 	try {
 	  const deletedDepartment = await DepartmentModel.findByIdAndDelete(departmentId);
 
@@ -127,7 +128,7 @@ class DepartmentWorker {
 	}
   }
 
-  async readDepartment(departmentId: string): Promise<Department | null> {
+  async readDepartment(departmentId: Types.ObjectId): Promise<Department | null> {
 	try {
 	  const department = await DepartmentModel.findById(departmentId);
 	  return department as Department; // Ensure explicit typing

@@ -6,6 +6,8 @@ import { Employee } from "../types/types";
 import { Connector, DBConnector, DatabaseType } from "./db";
 import { EmployeeInterface, Department, Holiday, EmployeeModel } from "./models";
 import { Types } from "mongoose";
+import { getEmployees } from "../utils/dataManager";
+import { holidayRulesByDepartment } from "../../data/dataStore";
 
 
 export class DBWorker {
@@ -18,10 +20,24 @@ export class DBWorker {
         }
     }
 
+    async getEmployeesByName(name: string): Promise<EmployeeInterface | null> {
+        try {
+            if (Connector.getType() === DatabaseType.MongoDB) {
+                // Assuming `employeeWorker` has a method to retrieve employees by name
+                return await employeeWorker.getByName(name);
+            } else {
+                throw new Error('Employee data retrieval by name currently only supported in MongoDB');
+            }
+        } catch (error) {
+            console.error('Error retrieving employees by name:', error);
+            throw error; // Re-throw for further handling
+        }
+    }
+
     // Implement other methods for working with data types supported by MongoDB only:
     async getEmployeeById(id: Types.ObjectId): Promise<EmployeeInterface | null> {
         if (Connector.getType() === DatabaseType.MongoDB) {
-            return await employeeWorker.readEmployeeById(id);
+            return await employeeWorker.getById(id);
         } else {
             throw new Error('Employee data retrieval currently only supported in MongoDB');
         }
@@ -83,6 +99,21 @@ export class DBWorker {
         }
     }
 
+    async getEmployeesFromObject() {
+        const employees = getEmployees();
+        for (let employee of employees) {
+            employeeWorker.insertOne(employee);
+        }
+	}
+
+    async getDepartmentsFromObject() {
+        departmentWorker.insertFromObject(holidayRulesByDepartment);
+    }
+
+    async getHolidaysFromObject() {
+        
+    }
+
 	async getEmployees(): Promise<EmployeeInterface[]> {
 		try {
 		  const employees = await EmployeeModel.find();
@@ -93,3 +124,5 @@ export class DBWorker {
 		}
 	}
 }
+
+export const dbWorker = new DBWorker();

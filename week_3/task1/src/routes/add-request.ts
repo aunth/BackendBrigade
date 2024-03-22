@@ -10,7 +10,7 @@ const router = express.Router();
 
 router.get('/', async(req: Request, res: Response) => {
     const error = req.query.error;
-    const employeeId = req.query.employeeId as string
+    const employeeId = req.query.employeeId as string;
     const publicHolidays = await getPublicHolidays(employeeId);
     res.render('add-request', {error: error, publicHolidays: publicHolidays, employeeId: employeeId});
 });

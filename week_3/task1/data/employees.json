@@ -16,7 +16,7 @@
   {
     "id": 3,
     "name": "John Smith",
-    "departament": "HR",
+    "department": "HR",
     "country": "UA",
     "remainingHolidays": 15
   }

@@ -3,23 +3,55 @@ import { EmployeeModel, EmployeeInterface } from './models';
 import { Employee } from '../types/types';
 import { departmentWorker } from './DepartmentWorker';
 import { Types } from 'mongoose';
+import { getHolidayRequests } from '../utils/dataManager';
+import { holidayWorker } from './HolidayWorker';
+import { requestWorker } from './RequestWorker';
 
 
 class EmployeesWorker {
+
   async insertOne(data: Employee): Promise<EmployeeInterface> {
 	try {
-
+		const holidayObjects = [];
+		const status = []
+		const holidayRequests = getHolidayRequests(data.id);
+		if (holidayRequests.length == 0) {
+			console.log(`Employee with ${data.id} id has no requests`);
+		} else {
+			for (let holidayRequest of holidayRequests) {
+				holidayObjects.push(await holidayWorker.insertOneHoliday({
+					_id: new Types.ObjectId(),
+					startDate: holidayRequest.startDate,
+					endDate: holidayRequest.endDate,
+				}));
+				status.push(holidayRequest.status);
+			}
+		}
 		const department = await departmentWorker.findDepartmentByName(data.department);
+		console.log(department);
+
 		if (!department) {
 			console.log(`User with name ${data.name} doens't have a department`);
 		}
+
 		const newEmployee = new EmployeeModel({
 			_id: new Types.ObjectId(),
 			name: data.name,
 			department: department?._id,
 			country: data.country,
 			remainingHolidays: data.remainingHolidays,
-		});	
+		});
+
+		for (let i = 0; i < holidayObjects.length; i++) {
+			const object = holidayObjects[i];
+			requestWorker.createRequest({
+				_id: new Types.ObjectId(),
+				employeeId: newEmployee._id,
+				holiday: object?._id,
+				status: status[i],
+			})
+		}
+
 		const savedEmployee = await newEmployee.save();
 		console.log(`Employee ${data.name} saved successfully.`);
 		return savedEmployee;
@@ -28,6 +60,16 @@ class EmployeesWorker {
 	  throw error;
 	}
   }
+
+  async getByName(name: string): Promise<EmployeeInterface | null> {
+	try {
+		const employee = await EmployeeModel.findOne({ name });
+		return employee;
+	} catch (error) {
+		console.error('Error getting employee by name:', error);
+		throw error;
+	}
+}
 
   async insertMany(data: Employee[]): Promise<Employee[]> {
 	try {
@@ -57,9 +99,9 @@ class EmployeesWorker {
 	}
   }
 
-  async readEmployeeById(id: Types.ObjectId): Promise<EmployeeInterface | null> {
+  async getById(_id: Types.ObjectId): Promise<EmployeeInterface | null> {
     try {
-      const employee = await EmployeeModel.findById(id);
+      const employee = await EmployeeModel.findById(_id);
       return employee; // Ensure explicit typing
     } catch (error) {
       console.error('Error reading employee:', error);
@@ -81,16 +123,6 @@ class EmployeesWorker {
 	} catch (error) {
 	  console.error('Error deleting employee:', error);
 	  throw error;
-	}
-  }
-
-  async readEmployee(employeeId: string): Promise<EmployeeInterface | null> {
-	try {
-	  const employee = await EmployeeModel.findById(employeeId);
-	  return employee as EmployeeInterface;
-	} catch (error) {
-	  console.error('Error reading employee:', error);
-	  return null;
 	}
   }
 }

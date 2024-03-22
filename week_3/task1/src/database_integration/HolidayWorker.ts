@@ -1,16 +1,17 @@
 
 import mongoose, { FilterQuery } from 'mongoose';
 import { HolidayModel, Holiday } from './models';
-import { DepartmentValues, HolidayRule } from './../types/types';
+import { DepartmentValues, HolidayRequest, HolidayRule } from './../types/types';
 import { Types } from 'mongoose';
 
 class HolidayWorker {
 	
-	async insertOneHoliday(holidayData: Holiday) {
+	async insertOneHoliday(holidayData: any) {
 		try {
 			const newHoliday = new HolidayModel(holidayData);
 			await newHoliday.save();
 			console.log('Holiday inserted successfully!');
+			return newHoliday;
 		} catch (error) {
 			console.error('Error inserting holiday:', error);
 	}
@@ -29,7 +30,7 @@ class HolidayWorker {
 	}
   }
 
-  async deleteOneHoliday(holidayId: mongoose.Types.ObjectId) {
+  async deleteOneHoliday(holidayId: Types.ObjectId) {
 	try {
 		await HolidayModel.findByIdAndDelete(holidayId);
 		console.log('Holiday deleted successfully!');
