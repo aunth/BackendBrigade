@@ -12,12 +12,12 @@
     <ul>
         <% holidayRequests.filter(request => request.status === 'pending').forEach(request => { %>
             <li>
-                <strong>Request ID:</strong> <%= request.idForRequest %>, 
-                <strong>Employee ID:</strong> <%= request.employeeId %> (<%= getNameById(request.employeeId) %>), 
-                <strong>Start Date:</strong> <%= request.startDate.toLocaleDateString('en-CA') %>,
-                <strong>End Date:</strong> <%= request.endDate.toLocaleDateString('en-CA') %>
-				<form id="deleteForm" action="/delete/<%= request.idForRequest %>" method="POST">
-					<input type="hidden" name="employeeId" value="<%= request.employeeId %>">
+                <strong>Request ID:</strong> <%= request.id %>, 
+                <strong>Employee ID:</strong> <%= request.employee_id %> (<%= employeeName %>), 
+                <strong>Start Date:</strong> <%= request.start_date.toLocaleDateString('en-CA') %>,
+                <strong>End Date:</strong> <%= request.end_date.toLocaleDateString('en-CA') %>
+				<form id="deleteForm" action="/delete/<%= request.id %>" method="POST">
+					<input type="hidden" name="employeeId" value="<%= request.employee_id %>">
 					<button type="submit">Delete</button>
 				</form>
             </li>

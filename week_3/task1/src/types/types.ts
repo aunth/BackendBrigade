@@ -1,9 +1,10 @@
+
 export interface Employee {
     id: number;
     name: string;
-    department: Department;
+    department_id: number;
     country: string;
-    remainingHolidays: number;
+    remaining_holidays: number;
   }
 
 export enum Department {
@@ -15,12 +16,20 @@ export enum Department {
   }
   
   export interface HolidayRequest {
-    idForRequest: number;
-    employeeId: number;
-    startDate: Date;
-    endDate: Date;
+    id: number;
+    employee_id: number;
+    start_date: Date;
+    end_date: Date;
     status: 'pending' | 'approved' | 'rejected';
   }
+
+  //export interface HolidayRequestForSQL {
+  //  id: number;
+  //  employee_id: number;
+  //  start_date: Date;
+  //  end_date: Date;
+  //  status: 'pending' | 'approved' | 'rejected';
+  //}
   
   export interface HolidayRule {
     maxConsecutiveDays: number;

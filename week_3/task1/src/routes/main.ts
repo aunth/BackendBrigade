@@ -10,10 +10,10 @@ router.get('/', (req: Request, res: Response) => {
 });
 
 
-router.post('/request-action', (req, res) => {
+router.post('/request-action', async (req, res) => {
   const { employeeId, action } = req.body;
 
-  const employeeExists = getNameById(Number(employeeId));
+  const employeeExists = await getNameById(Number(employeeId));
 
   if (!employeeExists) {
     res.status(404).send("Employee ID does not exist.");

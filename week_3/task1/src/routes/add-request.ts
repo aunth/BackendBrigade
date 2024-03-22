@@ -1,8 +1,11 @@
 import express, {Response, Request} from 'express';
 import { HolidayRequest} from '../types/types';
-import { getEmployees, getHolidayRequests, saveHolidayRequest} from '../utils/dataManager';
+//import { getEmployees, getHolidayRequests, saveHolidayRequest} from '../utils/dataManager';
 import { validateRequestDates, checkHolidayConflicts, isDuplicateRequest, getPublicHolidays} from '../utils/holidayManager';
 import { findEmploee } from '../utils/utils';
+import { requestController } from '../controllers/request.controller';
+import { employeeController } from '../controllers/employee.controller';
+
 
 const router = express.Router();
 
@@ -23,8 +26,8 @@ router.post('/',  async(req: Request, res: Response) => {
         return res.redirect(`add-request?error=Invalid input&employeeId=${employeeId}`);
     }
 
-    let employees = getEmployees();
-    let holidayRequests = getHolidayRequests();
+    let employees = await employeeController.getEmployees();
+    let holidayRequests = await requestController.getAllRequests();
     
 
     const employee = findEmploee(employees, Number(employeeId));
@@ -32,7 +35,8 @@ router.post('/',  async(req: Request, res: Response) => {
         return res.redirect(`/add-request?error=Employee not found&employeeId=${employeeId}`);
     }
 
-    const validationError = validateRequestDates(startDate, endDate, employee);
+
+    const validationError = await validateRequestDates(startDate, endDate, employee);
     if (validationError) {
         return res.redirect(`/add-request?error=${encodeURIComponent(validationError)}&employeeId=${employeeId}`);
     }
@@ -46,22 +50,24 @@ router.post('/',  async(req: Request, res: Response) => {
 
 
     const newRequest: HolidayRequest = {
-        idForRequest: holidayRequests.length + 1,
-        employeeId: Number(employeeId),
-        startDate: new Date(startDate),
-        endDate: new Date(endDate),
-        status: 'pending',
+        id: holidayRequests.length + 1,
+        employee_id: Number(employeeId),
+        start_date: new Date(startDate),
+        end_date: new Date(endDate),
+        status: "pending"
     };
 
-    if (isDuplicateRequest(newRequest)) {
+    const isDuplicate = await isDuplicateRequest(newRequest);
+
+    if (isDuplicate) {
         return res.redirect(`/add-request?error=Duplicate holiday request detected.&employeeId=${employeeId}`);
       } else {
-        saveHolidayRequest(newRequest);
+        await requestController.createRequest(newRequest)  /////////////////////////
       }
 
-    console.log(`User with ${newRequest.employeeId} id create new Holiday Request ` + 
-                `from ${newRequest.startDate.toLocaleDateString('en-CA')} ` + 
-                `to ${newRequest.endDate.toLocaleDateString('en-CA')}`)
+    console.log(`User with ${newRequest.employee_id} id create new Holiday Request ` + 
+                `from ${newRequest.start_date.toLocaleDateString('en-CA')} ` + 
+                `to ${newRequest.end_date.toLocaleDateString('en-CA')}`)
 
     res.redirect('/requests');
 
