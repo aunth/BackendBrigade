@@ -1,5 +1,6 @@
 import { AppDataSource } from "../database";
 import { Employee } from "../entity/Employee";
+import { Types } from "mongoose";
 
 class EmployeeController {
     async getEmployees() {
@@ -8,15 +9,39 @@ class EmployeeController {
         return await employeeRepository.find({ order: { id: 'ASC' } });
     }
 
-    async getEmployee(employeeId: number) {
+    async getEmployee(employeeName: string) {
         // Use TypeORM's repository API to find a single employee by ID
         const employeeRepository = AppDataSource.getRepository(Employee);
-        const employee = await employeeRepository.findOneBy({ id: employeeId });
+        const employee = await employeeRepository.findOneBy({ name: employeeName });
         if (!employee) {
-            console.log('No employee found with that ID.');
+            console.log('No employee found with that name.');
             return null;
         } else {
             return employee;
+        }
+    }
+
+    async getEmployeeById(employeeId: number) {
+        const employeeRepository = AppDataSource.getRepository(Employee);
+        const employee = await employeeRepository.findOneBy({ id: employeeId });
+        if (!employee) {
+            console.log('No employee found with that name.');
+            return null;
+        } else {
+            return employee;
+        }
+    }
+
+    async getEmployeeIdByName(employeeName: string): Promise <string> {
+    
+        const employeeRepository = AppDataSource.getRepository(Employee);
+
+        const employee = await employeeRepository.findOneBy({ name: employeeName });
+        if (!employee) {
+            console.log('No employee found with that name.');
+            return '';
+        } else {
+            return employee.id.toString();
         }
     }
 
