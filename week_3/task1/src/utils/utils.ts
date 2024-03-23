@@ -2,6 +2,8 @@
 import { Employee, HolidayRequest} from '../types/types';
 import { getEmployees } from './dataManager';
 import { employeeController } from '../controllers/employee.controller';
+import { EmployeeInterface } from '../database_integration/models';
+import { Connector, DatabaseType } from '../database_integration/db';
 
 export const employeesFilename = './data/employees.json';
 export const holidaysFilename = './data/holidays.json';
@@ -22,6 +24,15 @@ export function getDaysNum(request: HolidayRequest) {
   const startDate = new Date(request.start_date);
 
   return (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24) + 1
+}
+
+export function getIdFromEmployee(employee: EmployeeInterface | Employee) {
+    if (Connector.getType() == DatabaseType.MongoDB) {
+        return (employee as EmployeeInterface)?._id;
+    }
+    else {
+        return employee?.id;
+    }
 }
 
 
