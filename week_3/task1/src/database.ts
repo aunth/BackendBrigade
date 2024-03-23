@@ -1,10 +1,10 @@
 import "reflect-metadata"
-import { DataSource} from 'typeorm';
+import { DataSource } from 'typeorm';
 import path from 'path';
-//import { Employee } from '../src/entity/Employee';
-//import { Request } from '../src/entity/Request';
-//import { Department } from '../src/entity/Department';
-//import { BlackoutPeriod } from '../src/entity/BlackoutPeriod';
+import { Employee } from '../src/entity/Employee';
+import { Request } from '../src/entity/Request';
+import { Department } from '../src/entity/Department';
+import { BlackoutPeriod } from '../src/entity/BlackoutPeriod';
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -16,7 +16,7 @@ export const AppDataSource = new DataSource({
     username: process.env.POSTGRESQL_USER,
     password: process.env.POSTGRESQL_PASSWORD,
     database: process.env.POSTGRESQL_DATABASE,
-    //entities: [Employee, Request, Department, BlackoutPeriod],
+    entities: [Employee, Request, Department, BlackoutPeriod],
     //entities: [path.join(__dirname, "entity/**/*.ts")],
     synchronize: false,
     dropSchema: false,

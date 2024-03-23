@@ -57,7 +57,8 @@ router.put('/', async(req: Request, res: Response) => {
     }
 
 
-    const updatedRequest = await dbWorker.updateRequest(holidayRequest, startDate, endDate);
+    const updatedRequest = await dbWorker.updateRequest(requestID, {
+        start_date: startDate, end_date: endDate });
     if (updatedRequest == null) {
         console.log(`Something went wrong with updating request ${holidayRequest}`);
         return ;
@@ -65,7 +66,7 @@ router.put('/', async(req: Request, res: Response) => {
     if (await isDuplicateRequest(updatedRequest)) {
         return res.json({success: true, redirectUrl: `/update-request?error=Duplicate holiday request detected.&employeeId=${employeeId}`});
       } else {
-        await requestController.updateHolidayRequest(String(requestID), updatedRequest);
+        await dbWorker.updateRequest(requestID, updatedRequest);
       }
 
     console.log(`User with id ${updatedRequest.employee_id} updated their Holiday Request ` + 
