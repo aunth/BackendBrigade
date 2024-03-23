@@ -1,8 +1,9 @@
 import mongoose from 'mongoose';
-import { Client, QueryResult } from 'pg';
-import { EmployeeModel } from './models';
-import { Employee } from '../types/types';
-import { Types } from 'mongoose';
+//import { Client, QueryResult } from 'pg';
+//import { EmployeeModel } from './models';
+//import { Employee } from '../types/types';
+//import { Types } from 'mongoose';
+import { DataSource } from 'typeorm';
 
 const dbName = 'HolidayApplication';
 
@@ -14,41 +15,43 @@ export enum DatabaseType {
 }
 
 export class DBConnector {
-    private databaseType: DatabaseType;
+    private static instance: DBConnector;
+    public currentDatabaseType: DatabaseType | null = null;
     private mongoDBUri: string;
-    private pgClient: Client;
+    private pgDataSource: DataSource;
 
-    constructor(databaseType: DatabaseType, mongoDBUri: string, pgConnectionString: string) {
-        this.databaseType = databaseType;
+    private constructor(mongoDBUri: string, pgDataSource: DataSource) {
         this.mongoDBUri = mongoDBUri;
-        this.pgClient = new Client({
-            connectionString: pgConnectionString,
-        });
+        this.pgDataSource = pgDataSource;
     }
 
-    async connect() {
-        if (this.databaseType === DatabaseType.MongoDB) {
+    public static getInstance(mongoDBUri: string, pgDataSource: DataSource): DBConnector {
+        if (!DBConnector.instance) {
+            DBConnector.instance = new DBConnector(mongoDBUri, pgDataSource);
+        }
+        return DBConnector.instance;
+    }
+
+    async switchDatabase(databaseType: DatabaseType) {
+        if (this.currentDatabaseType === databaseType) {
+            console.log(`Already using ${databaseType}`);
+            return;
+        }
+
+        this.currentDatabaseType = databaseType;
+
+        // Disconnect from all databases first to ensure a clean switch
+        //await mongoose.disconnect();
+        //await this.pgDataSource.destroy();
+
+        if (databaseType === DatabaseType.MongoDB) {
             await mongoose.connect(this.mongoDBUri);
-            console.log('Connected to MongoDB');
-        } else if (this.databaseType === DatabaseType.PostgreSQL) {
-            await this.pgClient.connect();
-            console.log('Connected to PostgreSQL');
+            console.log('Switched to MongoDB');
+        } else if (databaseType === DatabaseType.PostgreSQL) {
+            await this.pgDataSource.initialize();
+            console.log('Switched to PostgreSQL');
         }
-    }
-
-    async disconnect() {
-        if (this.databaseType === DatabaseType.MongoDB) {
-            await mongoose.disconnect();
-            console.log('Disconnected from MongoDB');
-        } else if (this.databaseType === DatabaseType.PostgreSQL) {
-            await this.pgClient.end();
-            console.log('Disconnected from PostgreSQL');
-        }
-    }
-
-    getType() {
-        return this.databaseType;
     }
 }
 
-export const Connector = new DBConnector(DatabaseType.MongoDB, uri, '');
+//export const Connector = new DBConnector(DatabaseType.MongoDB, uri, '');
