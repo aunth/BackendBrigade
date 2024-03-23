@@ -16,6 +16,7 @@ router.post('/request-action', async (req, res) => {
   const { employeeId, action } = req.body;
 
   const employeeExists = await getNameById(Number(employeeId));
+});
 
 
 router.post('/request-action', async (req, res) => {

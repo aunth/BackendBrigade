@@ -5,58 +5,60 @@ export interface EmployeeInterface extends Document {
     name: string;
     department: Types.ObjectId;
     country: string;
-    remainingHolidays: number;
+    remaining_holidays: number;
 }
 
 export interface RequestInterface extends Document {
     _id: Types.ObjectId;
-    employeeId: Types.ObjectId;
-    holiday: Types.ObjectId;
+    employee_id: Types.ObjectId;
+    start_date: Date;
+    end_date: Date;
     status: string;
 }
 
-export interface Department extends Document {
+export interface DepartmentInterface extends Document {
     _id: Types.ObjectId;
     name: string;
-    maxConsecutiveDays: number;
+    max_consecutive_days: number;
     blackoutPeriods: Types.ObjectId[];
 }
 
-export interface Holiday extends Document {
+export interface BlackoutPeriodInterface extends Document {
     _id: Types.ObjectId;
-    startDate: Date;
-    endDate: Date;
+    start_date: Date;
+    end_date: Date;
 }
 
 export const RequestSchema = new Schema({
 	_id: {type: Types.ObjectId, required: true},
-    employeeId: { type: Types.ObjectId, ref: 'Employee', required: true },
-    holiday: { type: Types.ObjectId, ref: 'Holiday', required: true },
+    employee_id: { type: Types.ObjectId, ref: 'Employees', required: true },
+    start_date: {type: Date, required: true},
+    end_date: {type: Date, required: true},
     status: { type: String, required: true },
 }, { collection: 'Requests' });
 
 export const EmployeeSchema = new Schema({
     _id: { type: Types.ObjectId, required: true },
     name: { type: String, required: true },
-    department: { type: Types.ObjectId, ref: 'Department', required: true },
+    department: { type: Types.ObjectId, ref: 'Departments', required: true },
     country: { type: String, required: true },
-    remainingHolidays: { type: Number, required: true }
+    remaining_holidays: { type: Number, required: true }
 }, { collection: 'Employees' });
 
 export const DepartmentSchema = new Schema({
     _id: { type: Types.ObjectId, required: true },
     name: { type: String, required: true },
-    maxConsecutiveDays: { type: Number, required: true },
-    blackoutPeriods: { type: [Types.ObjectId], ref: 'Holiday', required: true }
+    max_consecutive_days: { type: Number, required: true },
+    blackout_periods: { type: [Types.ObjectId], ref: 'BlackoutPeriods', required: true }
 }, { collection: 'Departments' });
 
-const holidaySchema = new Schema({
+const BlackoutPeriodSchema = new Schema({
     _id: { type: Types.ObjectId, required: true },
-    startDate: { type: Date, required: true },
-    endDate: { type: Date, required: true },
-}, { collection: 'Holidays' });
+    start_date: { type: Date, required: true },
+    end_date: { type: Date, required: true },
+}, { collection: 'BlackoutPeriods' });
 
-export const DepartmentModel = mongoose.model<Department>('Departments', DepartmentSchema);
+export const DepartmentModel = mongoose.model<DepartmentInterface>('Departments', DepartmentSchema);
 export const EmployeeModel = mongoose.model<EmployeeInterface>('Employees', EmployeeSchema);
-export const RequestModel = mongoose.model<Request>('Requests', RequestSchema);
-export const HolidayModel = mongoose.model<Holiday>('Holidays', holidaySchema);
+export const RequestModel = mongoose.model<RequestInterface>('Requests', RequestSchema);
+export const BlackoutPeriodModel = mongoose.model<BlackoutPeriodInterface>('BlackoutPeriods', BlackoutPeriodSchema);

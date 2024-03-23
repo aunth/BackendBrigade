@@ -1,15 +1,16 @@
 import mongoose, { Document, Model } from 'mongoose';
-import { DepartmentModel, Department, HolidayModel, Holiday } from './models'; // Assuming models.ts is in the same directory
+import { DepartmentModel, BlackoutPeriodModel, BlackoutPeriodInterface, DepartmentInterface } from './models'; // Assuming models.ts is in the same directory
 import { DepartmentValues, Employee, HolidayRule } from './../types/types';
 import { Types } from 'mongoose';
 import { employeeWorker } from './EmployeeWorker';
+import { blackoutPeriodWorker } from './HolidayWorker';
 
 
 class DepartmentWorker {
 
 	async insertFromObject(holidayRulesByDepartment: { [key in DepartmentValues]: HolidayRule }) {
-		const departmentDocs: Department[] = [];
-		const holidayDocs: Holiday[] = [];
+		const departmentDocs: DepartmentInterface[] = [];
+		const holidayDocs: BlackoutPeriodInterface[] = [];
 
 		let department: DepartmentValues;
   
@@ -18,17 +19,17 @@ class DepartmentWorker {
 
 			console.log(departmentRules.blackoutPeriods);
 
-			let newHoliday = new HolidayModel({
+			let newHoliday = new BlackoutPeriodModel({
 				_id: new Types.ObjectId(),
-				startDate: departmentRules.blackoutPeriods[0].start,
-				endDate: departmentRules.blackoutPeriods[0].end,
-			  })
+				start_date: departmentRules.blackoutPeriods[0].start,
+				end_date: departmentRules.blackoutPeriods[0].end,
+			  });
   
 			let newDepartment = new DepartmentModel({
 				_id: new Types.ObjectId(),
 				name: department,
-				maxConsecutiveDays: departmentRules.maxConsecutiveDays,
-				blackoutPeriods: [newHoliday._id],
+				max_consecutive_days: departmentRules.maxConsecutiveDays,
+				blackout_periods: [newHoliday._id],
 			})
   
 		departmentDocs.push(newDepartment);
@@ -44,14 +45,14 @@ class DepartmentWorker {
 		}
 
 		try {
-			await HolidayModel.insertMany(holidayDocs);
+			await BlackoutPeriodModel.insertMany(holidayDocs);
 			console.log('Holidays populated successfully!');
 		  } catch (error) {
 			console.error('Error populating holidays:', error);
 		  }
 }
 
-  async insertDepartment(data: Department): Promise<Department> {
+  async insertDepartment(data: DepartmentInterface): Promise<DepartmentInterface> {
 	try {
 	  const newDepartment = new DepartmentModel(data);
 	  const savedDepartment = await newDepartment.save();
@@ -63,17 +64,17 @@ class DepartmentWorker {
 	}
   }
 
-  async readAllDepartments(): Promise<Department[]> {
+  async readAllDepartments(): Promise<DepartmentInterface[]> {
     try {
       const departments = await DepartmentModel.find();
-      return departments as Department[]; // Ensure explicit typing
+      return departments as DepartmentInterface[]; // Ensure explicit typing
     } catch (error) {
       console.error('Error reading departments:', error);
       throw error; // Re-throw for further handling
     }
   }
 
-  async insertManyDepartments(data: Department[]): Promise<Department[]> {
+  async insertManyDepartments(data: DepartmentInterface[]): Promise<DepartmentInterface[]> {
 	try {
 	  const savedDepartments = await DepartmentModel.insertMany(data);
 	  console.log('Departments saved successfully.');
@@ -84,7 +85,23 @@ class DepartmentWorker {
 	}
   }
 
-  async findDepartmentByName(name: string): Promise<Department | null> {
+  async getBlackoutPeriod(id: Types.ObjectId) {
+	try {
+		const Department = await this.getDepartment(id);
+		const blackout_periods = await blackoutPeriodWorker.findBlackoutPeriod({_id: Department?.blackoutPeriods[0]});
+		console.log(`Holiday is ${blackout_periods}`);
+		const periods = blackout_periods.map((period: BlackoutPeriodInterface) => ({
+			start_date: period.start_date,
+			end_date: period.end_date,
+		}));
+		return periods;
+	  } catch (error) {
+		console.error('Error inserting departments:', error);
+		throw error; // Re-throw the error for further handling
+	  }
+  }
+
+  async findDepartmentByName(name: string): Promise<DepartmentInterface | null> {
     try {
       const department = await DepartmentModel.findOne({ name });
       return department;
@@ -94,13 +111,13 @@ class DepartmentWorker {
     }
   }
 
-  async updateById(departmentId: Types.ObjectId, data: Partial<Department>): Promise<Department | null> {
+  async updateById(departmentId: Types.ObjectId, data: Partial<DepartmentInterface>): Promise<DepartmentInterface | null> {
 	try {
 	  const updatedDepartment = await DepartmentModel.findByIdAndUpdate(departmentId, data, { new: true });
 
 	  if (updatedDepartment) {
 		console.log(`Department ${updatedDepartment.name} updated successfully.`);
-		return updatedDepartment as Department; // Ensure explicit typing
+		return updatedDepartment as DepartmentInterface; // Ensure explicit typing
 	  } else {
 		console.warn(`Department with ID ${departmentId} not found.`);
 		return null;
@@ -111,13 +128,13 @@ class DepartmentWorker {
 	}
   }
 
-  async deleteDepartment(departmentId: Types.ObjectId): Promise<Department | null> {
+  async deleteDepartment(departmentId: Types.ObjectId): Promise<DepartmentInterface | null> {
 	try {
 	  const deletedDepartment = await DepartmentModel.findByIdAndDelete(departmentId);
 
 	  if (deletedDepartment) {
 		console.log(`Department ${deletedDepartment.name} deleted successfully.`);
-		return deletedDepartment as Department; // Ensure explicit typing
+		return deletedDepartment as DepartmentInterface; // Ensure explicit typing
 	  } else {
 		console.warn(`Department with ID ${departmentId} not found.`);
 		return null;
@@ -128,10 +145,10 @@ class DepartmentWorker {
 	}
   }
 
-  async readDepartment(departmentId: Types.ObjectId): Promise<Department | null> {
+  async getDepartment(departmentId: Types.ObjectId): Promise<DepartmentInterface | null> {
 	try {
 	  const department = await DepartmentModel.findById(departmentId);
-	  return department as Department; // Ensure explicit typing
+	  return department as DepartmentInterface;
 	} catch (error) {
 	  console.error('Error reading department:', error);
 	  return null;

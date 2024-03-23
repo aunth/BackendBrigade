@@ -4,7 +4,7 @@ import { Employee } from '../types/types';
 import { departmentWorker } from './DepartmentWorker';
 import { Types } from 'mongoose';
 import { getHolidayRequests } from '../utils/dataManager';
-import { holidayWorker } from './HolidayWorker';
+import { blackoutPeriodWorker } from './HolidayWorker';
 import { requestWorker } from './RequestWorker';
 
 
@@ -12,21 +12,10 @@ class EmployeesWorker {
 
   async insertOne(data: Employee): Promise<EmployeeInterface> {
 	try {
-		const holidayObjects = [];
-		const status = []
 		const holidayRequests = getHolidayRequests(data.id);
 		if (holidayRequests.length == 0) {
 			console.log(`Employee with ${data.id} id has no requests`);
-		} else {
-			for (let holidayRequest of holidayRequests) {
-				holidayObjects.push(await holidayWorker.insertOneHoliday({
-					_id: new Types.ObjectId(),
-					startDate: holidayRequest.startDate,
-					endDate: holidayRequest.endDate,
-				}));
-				status.push(holidayRequest.status);
-			}
-		}
+		} 
 		const department = await departmentWorker.findDepartmentByName(data.department);
 		console.log(department);
 
@@ -39,16 +28,17 @@ class EmployeesWorker {
 			name: data.name,
 			department: department?._id,
 			country: data.country,
-			remainingHolidays: data.remainingHolidays,
+			remaining_holidays: data.remaining_holidays,
 		});
 
-		for (let i = 0; i < holidayObjects.length; i++) {
-			const object = holidayObjects[i];
+		for (let i = 0; i < holidayRequests.length; i++) {
+			const object = holidayRequests[i];
 			requestWorker.createRequest({
 				_id: new Types.ObjectId(),
-				employeeId: newEmployee._id,
-				holiday: object?._id,
-				status: status[i],
+				employee_id: newEmployee._id,
+				start_date: object.start_date,
+				end_date: object.end_date,
+				status: object.status,
 			})
 		}
 
