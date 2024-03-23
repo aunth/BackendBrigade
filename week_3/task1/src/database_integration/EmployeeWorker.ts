@@ -3,57 +3,47 @@ import { EmployeeModel, EmployeeInterface } from './models';
 import { Employee } from '../types/types';
 import { departmentWorker } from './DepartmentWorker';
 import { Types } from 'mongoose';
-import { getHolidayRequests } from '../utils/dataManager';
-import { holidayWorker } from './HolidayWorker';
+import { blackoutPeriodWorker } from './HolidayWorker';
 import { requestWorker } from './RequestWorker';
+import { dbWorker } from './DataBaseWorker';
 
 
 class EmployeesWorker {
 
-  async insertOne(data: Employee): Promise<EmployeeInterface> {
+  async insertOne(employee: EmployeeInterface): Promise<EmployeeInterface> {
 	try {
-		const holidayObjects = [];
-		const status = []
-		const holidayRequests = getHolidayRequests(data.id);
+		const holidayRequests = await dbWorker.getHolidayRequestsByEmployee(employee._id);
 		if (holidayRequests.length == 0) {
-			console.log(`Employee with ${data.id} id has no requests`);
-		} else {
-			for (let holidayRequest of holidayRequests) {
-				holidayObjects.push(await holidayWorker.insertOneHoliday({
-					_id: new Types.ObjectId(),
-					startDate: holidayRequest.startDate,
-					endDate: holidayRequest.endDate,
-				}));
-				status.push(holidayRequest.status);
-			}
-		}
-		const department = await departmentWorker.findDepartmentByName(data.department);
+			console.log(`Employee with ${employee.id} id has no requests`);
+		} 
+		const department = await departmentWorker.getDepartment(employee.department)
 		console.log(department);
 
 		if (!department) {
-			console.log(`User with name ${data.name} doens't have a department`);
+			console.log(`User with name ${employee.name} doens't have a department`);
 		}
 
 		const newEmployee = new EmployeeModel({
 			_id: new Types.ObjectId(),
-			name: data.name,
+			name: employee.name,
 			department: department?._id,
-			country: data.country,
-			remainingHolidays: data.remainingHolidays,
+			country: employee.country,
+			remaining_holidays: employee.remaining_holidays,
 		});
 
-		for (let i = 0; i < holidayObjects.length; i++) {
-			const object = holidayObjects[i];
+		for (let i = 0; i < holidayRequests.length; i++) {
+			const object = holidayRequests[i];
 			requestWorker.createRequest({
 				_id: new Types.ObjectId(),
-				employeeId: newEmployee._id,
-				holiday: object?._id,
-				status: status[i],
+				employee_id: newEmployee._id,
+				start_date: object.start_date,
+				end_date: object.end_date,
+				status: object.status,
 			})
 		}
 
 		const savedEmployee = await newEmployee.save();
-		console.log(`Employee ${data.name} saved successfully.`);
+		console.log(`Employee ${employee.name} saved successfully.`);
 		return savedEmployee;
 	} catch (error) {
 	  console.error('Error inserting employee:', error);

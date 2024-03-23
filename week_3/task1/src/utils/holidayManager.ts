@@ -3,9 +3,11 @@ import { Employee, Holiday, HolidayRequest} from '../types/types';
 //import { getEmployees, getHolidayRequests } from './dataManager';
 import { getCountryById } from './utils';
 import { holidayRulesByDepartment } from '../../data/dataStore';
-import { getDaysNum } from '../utils/utils';
 //import { updateEmployeeRemainingHolidays } from './dataManager';
+import { getDaysNum } from './utils';
 import * as fs from 'fs';
+import { Types } from 'mongoose';
+import { dbWorker } from '../database_integration/DataBaseWorker';
 
 export const employeesFilename = './data/employees.json';
 export const holidaysFilename = './data/holidays.json';
@@ -14,6 +16,9 @@ import { requestController } from '../controllers/request.controller';
 import { employeeController } from '../controllers/employee.controller';
 import { departmentController } from '../controllers/department.controller';
 import { blackoutPeriodsController } from '../controllers/blackoutperiods.controller';
+import { DBConnector, DatabaseType } from '../database_integration/db';
+import { Department } from '../entity/Department';
+import { DepartmentInterface, EmployeeInterface, RequestInterface } from '../database_integration/models';
 
 
 export async function getNextPublicHolidays(countryCode: string) {
@@ -32,7 +37,7 @@ export async function getNextPublicHolidays(countryCode: string) {
     }
 }
 
-export async function validateRequestDates(startDate: string, endDate: string, employee: Employee) {
+export async function validateRequestDates(startDate: string, endDate: string, employee: Employee | EmployeeInterface) {
   const start = new Date(startDate);
   const end = new Date(endDate);
 
@@ -46,20 +51,33 @@ export async function validateRequestDates(startDate: string, endDate: string, e
   const dayDifference = (end.getTime() - start.getTime()) / (1000 * 3600 * 24) + 1;
   console.log(dayDifference);
 
-  const holidayRulesByDepartment = await departmentController.getDepartmentById(employee.department_id)
+  const department = await dbWorker.getDepartment(employee);
 
-  if (dayDifference > holidayRulesByDepartment.max_consecutive_days) {
-      return 'Exceeds maximum consecutive holiday days';
-  } else if (employee.remaining_holidays < dayDifference) {
-      return 'Insufficient remaining holiday days';
-  }
-  
-  // Check for blackout periods
-  const blackoutPeriods = await blackoutPeriodsController.getBlackoutPeriods(holidayRulesByDepartment.id);
-  console.log('blackoutPeriods', blackoutPeriods);
-  const hasBlackoutPeriod = blackoutPeriods.some(period => {
-    const blackoutStart = new Date(period.blackout_start_date.toLocaleDateString('en-CA'));
-    const blackoutEnd = new Date(period.blackout_end_date.toLocaleDateString('en-CA'));
+
+  if (department == undefined) {
+    console.log(`Error with processing of ${department}`);
+  } else {
+    if (DBConnector) {
+      const consecutiveDays = department.max_consecutive_days;
+      if (consecutiveDays == undefined) {
+        console.log(`Problem with field max_consecutive_days in ${department}`);
+      } else {
+        if (dayDifference > consecutiveDays) {
+          return 'Exceeds maximum consecutive holiday days';
+        } else if (await dbWorker.getRemainingHolidays(employee) < dayDifference) {
+          return 'Insufficient remaining holiday days';
+        }
+      }
+    }
+
+  const blackoutPeriods = await dbWorker.getBlackoutPeriods(department?.id);
+  if (blackoutPeriods == undefined) {
+    console.log(`Department with id: ${department._id}`)
+  } else {
+    console.log('blackoutPeriods', blackoutPeriods);
+    const hasBlackoutPeriod = blackoutPeriods.some(period => {
+    const blackoutStart = new Date(period.start_date.toLocaleDateString('en-CA'));
+    const blackoutEnd = new Date(period.end_date.toLocaleDateString('en-CA'));
 
     console.log("start", start);
     console.log("end", end);
@@ -69,40 +87,22 @@ export async function validateRequestDates(startDate: string, endDate: string, e
    
     return (start <= blackoutEnd && start >= blackoutStart) || (end <= blackoutEnd && end >= blackoutStart) || (start <= blackoutEnd && end >= blackoutStart)
   });
-  
-    if (hasBlackoutPeriod) {
-      return `Request falls within a blackout period`; ///////////// check it (add info about blackout period) //////////
-    }
-    
-    return null;
-}
 
-//function updateHolidayRequestStatus(requestId: number, status: 'pending' | 'approved' | 'rejected') {
-//  try {
-//      const rawData = fs.readFileSync(holidaysFilename, 'utf-8');
-//      let jsonData: HolidayRequest[] = JSON.parse(rawData);
-//      
-//      const requestIndex = jsonData.findIndex(request => request.idForRequest === requestId);
-//      
-//      if (requestIndex !== -1) {
-//          jsonData[requestIndex].status = status;
-//          fs.writeFileSync(holidaysFilename, JSON.stringify(jsonData, null, 2));
-//          console.log(`Holiday request ${requestId} status updated to ${status}.`);
-//      } else {
-//          console.error(`Holiday request with ID ${requestId} not found.`);
-//      }
-//  } catch (error) {
-//      console.error('Error updating holiday request status:', error);
-//  }
-//}
+  if (hasBlackoutPeriod) {
+    return `Request falls within a blackout period`; ///////////// check it (add info about blackout period) //////////
+  }
+  return null;
+  }
+}}
 
-export async function getPublicHolidays(employeeId: string) {
+
+export async function getPublicHolidays(employeeId: Types.ObjectId | number) {
     const empId = Number(employeeId);
     const countryCode = await getCountryById(empId);
     return await getNextPublicHolidays(countryCode);
 }
 
-export async function checkHolidayConflicts(startDate: Date, endDate: Date, employeeId: string) {
+export async function checkHolidayConflicts(startDate: Date, endDate: Date, employeeId: Types.ObjectId | number) {
     try {
       const start = new Date(startDate);
       const end = new Date(endDate);
@@ -123,11 +123,10 @@ export async function checkHolidayConflicts(startDate: Date, endDate: Date, empl
     }
 }
 
-export async function isDuplicateRequest(newRequest: HolidayRequest): Promise<boolean> {
-    const holidayRequests = await requestController.getAllRequests();
-  
+export async function isDuplicateRequest(newRequest: HolidayRequest | RequestInterface): Promise<boolean> {
+    const holidayRequests = await dbWorker.getRequests();
     const duplicate = holidayRequests.some(request => {
-      if (request.employee_id === newRequest.employee_id) {
+      if (newRequest.employee_id == request.employee_id) {
   
         const existingStartDate = new Date(request.start_date.toLocaleDateString('en-CA'));
         const existingEndDate = new Date(request.end_date.toLocaleDateString('en-CA'));
@@ -152,36 +151,33 @@ export function saveHolidayRequests(requests: HolidayRequest[]) {
   }
 }
 
-//export function rejectRequest(requestId: number) {
-//  updateHolidayRequestStatus(requestId, 'rejected');
-//  console.log(`Request with ${requestId} was rejected`);
-//}
+export async function rejectRequest(requestId: number | Types.ObjectId) {
+ await dbWorker.updateRequest(requestId as Types.ObjectId, {status: 'rejected'});
+ console.log(`Request with ${requestId} was rejected`);
+}
 
 
-export async function approveRequest(requestId: string) {
-  //const holidayRequest = getHolidayRequests(requestId);
-  const holidayRequest =  await requestController.getRequest(requestId);
+export async function approveRequest(requestId: Types.ObjectId |string) {
+  const holidayRequest = await dbWorker.getRequestById(requestId);
 
   if (!holidayRequest) {
       console.error('Holiday request not found');
       return;
   }
 
-  //let employee = getEmployees(holidayRequest[0].employeeId);
-  const employee = await employeeController.getEmployee(holidayRequest.employee_id)
+  const employee = await dbWorker.getEmployeeById(holidayRequest.employee_id);
 
   if (!employee) {
       console.error('Employee not found');
       return;
   }
 
-  const takenDays = getDaysNum(holidayRequest); ////////////////////////////////////////////////////////////////
+  const takenDays = getDaysNum(holidayRequest);
   console.log("takenDays", takenDays);
 
   if (takenDays >= 0) {
-      //updateHolidayRequestStatus(requestId, 'approved');
-      //await requestController.updateRequestStatus(requestId, 'approved')
-      await employeeController.updateEmployeeRemainingHolidays(employee.id, takenDays);
+      await dbWorker.updateRequest(requestId as Types.ObjectId, {status: 'approved'});
+      await dbWorker.updateEmployeeById(employee.id, {remaining_holidays: employee.remaining_holidays - takenDays});
       console.log('Request approved');
   } else {
       console.log('Insufficient remaining holidays');

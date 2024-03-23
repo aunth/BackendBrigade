@@ -2,6 +2,10 @@
 import { Employee, HolidayRequest} from '../types/types';
 import { getEmployees } from './dataManager';
 import { employeeController } from '../controllers/employee.controller';
+import { EmployeeInterface, RequestInterface } from '../database_integration/models';
+import { DBConnector, DatabaseType } from '../database_integration/db';
+import { dbWorker } from '../database_integration/DataBaseWorker';
+import { Types } from 'mongoose';
 
 export const employeesFilename = './data/employees.json';
 export const holidaysFilename = './data/holidays.json';
@@ -17,28 +21,24 @@ export function increaseUserHolidays(employeeId: number, daysNum: number) {
   return employees;
 }
 
-export function getDaysNum(request: HolidayRequest) {
+export function getDaysNum(request: HolidayRequest | RequestInterface) {
   const endDate = new Date(request.end_date);
   const startDate = new Date(request.start_date);
 
   return (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24) + 1
 }
 
-
 export async function getNameById(id: number): Promise<string | undefined> {
-  const employees: Employee[] = await employeeController.getEmployees();
+  const employee = (await dbWorker.getEmployeeById(id));
   
-  const user = employees.find(employee => employee.id === id);
-  
-  if (!user) {
+  if (!employee) {
       return undefined;
   }
-  return user.name;
+  return employee.name;
 }
 
-export async function getCountryById(id: number): Promise<string> {
-  const employees: Employee[] = await employeeController.getEmployees();
-  const employee = employees.find(employee => employee.id === id);
+export async function getCountryById(id: number | Types.ObjectId): Promise<string> {
+  const employee = await dbWorker.getEmployeeById(id)
   return employee ? employee.country : "";
 }
 

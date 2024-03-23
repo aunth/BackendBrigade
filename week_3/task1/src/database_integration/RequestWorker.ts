@@ -6,10 +6,10 @@ import { RequestInterface, RequestModel } from './models';
 
 export class RequestWorker {
 
-  async createRequest(data: Partial<RequestInterface>): Promise<Request> {
+  async createRequest(data: Partial<RequestInterface>): Promise<RequestInterface> {
     try {
       const newRequest = await RequestModel.create(data);
-      console.log(`Request for employee ${data.employeeId} created successfully.`);
+      console.log(`Request for employee ${data.employee_id} created successfully.`);
       return newRequest;
     } catch (error) {
       console.error('Error creating request:', error);
@@ -17,7 +17,17 @@ export class RequestWorker {
     }
   }
 
-  async readRequestById(id: Types.ObjectId): Promise<Request | null> {
+  async getRequestById(id: Types.ObjectId): Promise<RequestInterface | null> {
+    try {
+      const request = await RequestModel.findById(id);
+      return request;
+    } catch (error) {
+      console.error('Error getting request by ID:', error);
+      throw error;
+    }
+  }
+
+  async readRequestById(id: Types.ObjectId): Promise<RequestInterface | null> {
     try {
       const request = await RequestModel.findById(id);
       return request;
@@ -27,7 +37,7 @@ export class RequestWorker {
     }
   }
 
-  async updateRequestById(id: Types.ObjectId, data: Partial<Request>): Promise<Request | null> {
+  async updateRequestById(id: Types.ObjectId, data: Partial<RequestInterface>): Promise<RequestInterface | null> {
     try {
       const updatedRequest = await RequestModel.findByIdAndUpdate(id, data, { new: true });
 
@@ -44,7 +54,7 @@ export class RequestWorker {
     }
   }
 
-  async deleteRequestById(id: Types.ObjectId): Promise<Request | null> {
+  async deleteRequestById(id: Types.ObjectId): Promise<RequestInterface | null> {
     try {
       const deletedRequest = await RequestModel.findByIdAndDelete(id);
 
@@ -61,7 +71,7 @@ export class RequestWorker {
     }
   }
 
-  async findAllRequests(): Promise<Request[]> {
+  async findAllRequests(): Promise<RequestInterface[]> {
     try {
       const requests = await RequestModel.find();
       return requests;
@@ -71,7 +81,7 @@ export class RequestWorker {
     }
   }
 
-  async findRequestsByEmployeeId(employeeId: Types.ObjectId): Promise<Request[]> {
+  async findRequestsByEmployeeId(employeeId: Types.ObjectId): Promise<RequestInterface[]> {
     try {
       const requests = await RequestModel.find({ employeeId });
       return requests;

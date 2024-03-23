@@ -1,6 +1,8 @@
 import express, {Response, Request} from 'express';
 import { HolidayRequest} from '../types/types';
 //import { getEmployees, getHolidayRequests, saveHolidayRequest} from '../utils/dataManager';
+import { validateRequestDates, checkHolidayConflicts, isDuplicateRequest, getPublicHolidays} from '../utils/holidayManager';
+import { DBConnector, DatabaseType } from '../database_integration/db';
 //import { validateRequestDates, checkHolidayConflicts, isDuplicateRequest, getPublicHolidays} from '../utils/holidayManager';
 import { findEmploee } from '../utils/utils';
 //import { Connector } from '../database_integration/db';
@@ -12,13 +14,19 @@ import { dbWorker } from '../database_integration/DataBaseWorker';
 const router = express.Router();
 
 
-//router.get('/', async(req: Request, res: Response) => {
-//    const error = req.query.error;
-//    const employeeName = req.query.employeeId as string;
-//    const employeeId = dbWorker.getEmployeeIdByEmployeeName(employeeName);
-//    const publicHolidays = await getPublicHolidays(employeeId);
-//    res.render('add-request', {error: error, publicHolidays: publicHolidays, employeeId: employeeId});
-//});
+router.get('/', async(req: Request, res: Response) => {
+    const error = req.query.error;
+    const employeeName = req.query.name as string;
+    const employee = (await dbWorker.getEmployeeByName(employeeName));
+    if (employee == null) {
+        console.log(`There is no employee with name ${name}`);
+        res.render(`add-request?error=There is no employee with name ${name}`);
+    } else {
+        const employeeId = employee.id;
+        const publicHolidays = await getPublicHolidays(employeeId);
+        res.render('add-request', {error: error, publicHolidays: publicHolidays, employeeId: employeeId});
+    }
+});
 
 router.post('/',  async(req: Request, res: Response) => {
 

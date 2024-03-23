@@ -9,10 +9,7 @@ import { EmployeeInterface } from '../database_integration/models';
 import { Employee } from '../types/types';
 
 
-
-
 const router = express.Router();
-
 
 router.get('/', (req: Request, res: Response) => {
   res.render('main');
@@ -28,7 +25,6 @@ router.post('/request-action', async (req, res) => {
         res.status(404).send(`Employee with name ${employeeName} does not exist.`);
         return;
     }
-    
     switch (action) {
         case 'create':
             res.redirect(`/add-request?employeeId=${encodeURIComponent(employeeName)}`);
