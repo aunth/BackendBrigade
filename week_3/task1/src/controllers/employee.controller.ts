@@ -32,16 +32,16 @@ class EmployeeController {
         }
     }
 
-    async getEmployeeIdByName(employeeName: string): Promise <string> {
+    async getEmployeeIdByName(employeeName: string): Promise <number> {
     
         const employeeRepository = AppDataSource.getRepository(Employee);
 
         const employee = await employeeRepository.findOneBy({ name: employeeName });
         if (!employee) {
             console.log('No employee found with that name.');
-            return '';
+            throw new Error('No employee found with that name.');
         } else {
-            return employee.id.toString();
+            return employee.id
         }
     }
 

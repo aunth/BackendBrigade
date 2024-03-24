@@ -21,14 +21,14 @@ class RequestController {
         }
     }
 
-    async getEmployeeRequests(employeeId: string) {
+    async getEmployeeRequests(employeeId: number) {
         const requestRepository = AppDataSource.getRepository(Request);
         try {
-            const employeeRequests = await requestRepository.findBy({ id: parseInt(employeeId, 10) });
+            const employeeRequests = await requestRepository.findBy({ id: employeeId });
             return employeeRequests;
         } catch (error) {
             console.error(error);
-            return [];
+            return null;
         }
     }
 
@@ -82,10 +82,10 @@ class RequestController {
     }
     
 
-    async deleteRequest(requestId: string) {
+    async deleteRequest(requestId: number) {
         const requestRepository = AppDataSource.getRepository(Request);
         try {
-            const deleteResult = await requestRepository.delete(parseInt(requestId, 10));
+            const deleteResult = await requestRepository.delete(requestId);
             if (deleteResult.affected === 0) {
                 console.error(`Request with ID ${requestId} not found.`);
             } else {
