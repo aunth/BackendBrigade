@@ -20,7 +20,7 @@ export interface DepartmentInterface extends Document {
     _id: Types.ObjectId;
     name: string;
     max_consecutive_days: number;
-    blackoutPeriods: Types.ObjectId[];
+    blackout_periods: Types.ObjectId[];
 }
 
 export interface BlackoutPeriodInterface extends Document {

@@ -21,7 +21,7 @@
             <label for="idForRequest">Select Request:</label>
             <select name="idForRequest" id="idForRequest" required>
                 <% holidayRequests.forEach(function(request) { %>
-                    <option value="<%= request.id %>">Request #<%= request.id %> - From <%= request.start_date.toLocaleDateString('en-CA') %> to <%= request.end_date.toLocaleDateString('en-CA') %></option>
+                    <option value="<%= request.id %>">Request From <%= request.start_date.toLocaleDateString('en-CA') %> to <%= request.end_date.toLocaleDateString('en-CA') %></option>
                 <% }); %>
             </select>
         </div>

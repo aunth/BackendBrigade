@@ -12,8 +12,7 @@
     <ul>
         <% holidayRequests.filter(request => request.status === 'pending').forEach(request => { %>
             <li>
-                <strong>Request ID:</strong> <%= request.id %>, 
-                <strong>Employee ID:</strong> <%= request.employee_id %> (<%= request.employeeName %>), 
+                <strong>Name:</strong> <%= employees.find(employee => employee.id == request.employee_id).name %>,
                 <strong>Start Date:</strong> <%= request.start_date.toLocaleDateString('en-CA') %>,
                 <strong>End Date:</strong> <%= request.end_date.toLocaleDateString('en-CA') %>
                 <button onclick="approveRequest('<%= request.id %>')">Approve</button>

@@ -87,7 +87,8 @@ class DepartmentWorker {
   async getBlackoutPeriod(id: Types.ObjectId) {
 	try {
 		const Department = await this.getDepartment(id);
-		const blackout_periods = await blackoutPeriodWorker.findBlackoutPeriod({_id: Department?.blackoutPeriods[0]});
+		console.log(Department);
+		const blackout_periods = await blackoutPeriodWorker.findBlackoutPeriod({_id: Department?.blackout_periods[0]});
 		console.log(`Holiday is ${blackout_periods}`);
 		const periods = blackout_periods.map((period: BlackoutPeriodInterface) => ({
 			start_date: period.start_date,
@@ -95,7 +96,7 @@ class DepartmentWorker {
 		}));
 		return periods;
 	  } catch (error) {
-		console.error('Error inserting departments:', error);
+		console.error('Error getting blackout periods departments:', error);
 		throw error; // Re-throw the error for further handling
 	  }
   }

@@ -30,7 +30,6 @@ export class DBWorker {
             }
         } catch (error) {
             console.error('Error retrieving employees by name:', error);
-            throw error;
         }
     }
 
@@ -53,11 +52,10 @@ export class DBWorker {
                 return await departmentWorker.getBlackoutPeriod(id as Types.ObjectId);
             } else {
                 return await blackoutPeriodsController.getBlackoutPeriods(id as number);
-                //throw new Error('Employee data retrieval by name currently only supported in MongoDB');
             }
         } catch (error) {
             console.error(`Error retrieving blackoutPeriods for department with id: ${id}:`, error);
-        }}
+    }}
 
 
 
@@ -67,7 +65,6 @@ export class DBWorker {
                 return await requestWorker.findAllRequests();
             } else {
                 return await requestController.getAllRequests();
-                //throw new Error('Employee data retrieval by name currently only supported in MongoDB');
             }
         } catch (error) {
             console.error(`Error retrieving all requests:`, error);
@@ -101,36 +98,28 @@ export class DBWorker {
         }
     }
 
-    async updateRequest(requestId: Types.ObjectId | string, newData: Partial<RequestInterface | HolidayRequest>): Promise<RequestInterface | HolidayRequest | null> {
+    async updateRequest(requestId: Types.ObjectId | string, newData: Partial<RequestInterface | HolidayRequest>): Promise<RequestInterface | HolidayRequest | undefined | null> {
         if (this.dbConnector.currentDatabaseType === DatabaseType.MongoDB) {
-            // MongoDB update logic
             return await requestWorker.updateRequestById(requestId as Types.ObjectId, newData as Partial<RequestInterface>);
         } else {
-            //return await requestController.updateHolidayRequest(requestId as string, newData as Partial<HolidayRequest>);
-            return null;
+            return await requestController.updateHolidayRequest(requestId as string, newData as Partial<HolidayRequest>);
         }
     }
 
 
     async createRequest(newRequest: RequestInterface | HolidayRequest) {
         if (this.dbConnector.currentDatabaseType === DatabaseType.MongoDB) {
-            // MongoDB update logic
-            //return await requestWorker.updateRequestById(requestId as Types.ObjectId, newData as Partial<RequestInterface>);
-            return null;
+            return await requestWorker.createRequest(newRequest as RequestInterface);
         } else {
             await requestController.createRequest(newRequest as HolidayRequest);
-            //return null;
         }
     }
-    
 
-    // Implement other methods for working with data types supported by MongoDB only:
     async getEmployeeById(id: Types.ObjectId | number | undefined): Promise<EmployeeInterface | null | Employee> {
         if (this.dbConnector.currentDatabaseType === DatabaseType.MongoDB) {
             return await employeeWorker.getById(id as Types.ObjectId);
         } else {
             return await employeeController.getEmployeeById(id as number);
-            //return null;
         }
     }
 
@@ -165,23 +154,6 @@ export class DBWorker {
         }
     }
 
-    // Methods for data types that can work with both MongoDB and PostgreSQL (if applicable):
-    async getAllDepartments(): Promise<DepartmentInterface[]> {
-        try {
-            if (this.dbConnector.currentDatabaseType === DatabaseType.MongoDB) {
-                return await departmentWorker.readAllDepartments();
-            } else if (this.dbConnector.currentDatabaseType === DatabaseType.PostgreSQL) {
-                // Implement logic for reading all departments in PostgreSQL
-            } else {
-                throw new Error('Unsupported database type');
-            }
-        } catch (error) {
-            console.error('Error reading departments:', error);
-            throw error; // Re-throw for further handling
-        }
-		return [];
-    }
-
     async getRequestById(id: Types.ObjectId | string): Promise<RequestInterface | null> {
         try {
             if (this.dbConnector.currentDatabaseType === DatabaseType.MongoDB) {
@@ -201,8 +173,6 @@ export class DBWorker {
                 return await departmentWorker.getDepartment((employee as EmployeeInterface).department);
             } else {
                 return await departmentController.getDepartmentById((employee as Employee).department_id);
-                //return {} as DepartmentInterface;
-                //throw new Error('Request retrieval currently only supported in MongoDB');
             }
         } catch (error) {
             console.error('Error retrieving request:', error);
@@ -259,43 +229,11 @@ export class DBWorker {
         }
     }
 
-    // async getEmployeesFromObject() {
-    //     const employees = getEmployees();
-    //     for (let employee of employees) {
-    //         const departmentId = await dbWorker.getDepartmentIdByName(employee.department);
-    //         const departmentObjectId = departmentId ? departmentId._id : new Types.ObjectId();
-
-    //         const emp = {
-    //             _id: new Types.ObjectId(),
-    //             name: employee.name,
-    //             department: departmentObjectId,
-    //             country: employee.country,
-    //             remaining_holidays: employee.remaining_holidays,
-    //         }
-            
-    //         await employeeWorker.insertEmployee(emp as EmployeeInterface);
-            
-    //         const requests = getRequests(employee.id);
-            
-    //         for (let request of requests) {
-            
-    //             await requestWorker.createRequest({
-    //                 _id: new Types.ObjectId(),
-    //                 employee_id: emp._id,
-    //                 start_date: request.start_date,
-    //                 end_date: request.end_date,
-    //                 status: request.status,
-    //             });
-    //         }
-    //     }
-    // }
-
     async getHolidayRequestsByEmployee(employeeId: Types.ObjectId | string | undefined) {
         if (this.dbConnector.currentDatabaseType === DatabaseType.PostgreSQL) {
             return await requestWorker.findRequestsByEmployeeId(employeeId as Types.ObjectId);
         } else {
             return await requestController.getEmployeeRequests(employeeId as string);
-          // throw new Error('Holiday data retrieval currently only supported in PostgreSQL');
         }
     }
 
@@ -310,7 +248,7 @@ export class DBWorker {
                 return employees;
               } catch (error) {
                 console.error('Error reading employees:', error);
-                throw error; // Re-throw for further handling
+                throw error;
               }
         } else {
             return await employeeController.getEmployees();

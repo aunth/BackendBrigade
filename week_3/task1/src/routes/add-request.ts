@@ -1,11 +1,7 @@
 import express, {Response, Request} from 'express';
 import { HolidayRequest} from '../types/types';
-//import { getEmployees, getHolidayRequests, saveHolidayRequest} from '../utils/dataManager';
 import { validateRequestDates, checkHolidayConflicts, isDuplicateRequest, getPublicHolidays} from '../utils/holidayManager';
-import { DBConnector, DatabaseType } from '../database_integration/db';
-//import { validateRequestDates, checkHolidayConflicts, isDuplicateRequest, getPublicHolidays} from '../utils/holidayManager';
 import { findEmploee } from '../utils/utils';
-//import { Connector } from '../database_integration/db';
 import { requestController } from '../controllers/request.controller';
 import { employeeController } from '../controllers/employee.controller';
 import { dbWorker } from '../database_integration/DataBaseWorker';
@@ -36,7 +32,6 @@ router.post('/',  async(req: Request, res: Response) => {
         return res.redirect(`add-request?error=Invalid input&employeeId=${employeeId}`);
     }
 
-    console.log(1);
 
     let empId
     try {
@@ -45,13 +40,9 @@ router.post('/',  async(req: Request, res: Response) => {
         empId = new Types.ObjectId(String(employeeId));
     }
 
-    console.log(2);
 
-    //let employees = await employeeController.getEmployees();
     let holidayRequests = await dbWorker.getRequests();
     
-    //dbWorker.getHolidayDetails
-    console.log(3);
 
     
     console.log("employeeId", employeeId);
@@ -60,44 +51,28 @@ router.post('/',  async(req: Request, res: Response) => {
         return res.redirect(`/add-request?error=Employee not found&employeeId=${employeeId}`);
     }
 
-    console.log(4);
     const validationError = await validateRequestDates(startDate, endDate, employee);
     if (validationError) {
         return res.redirect(`/add-request?error=${encodeURIComponent(validationError)}&employeeId=${employeeId}`);
     }
 
-    console.log(5)
-
-    // Check for conflicts with public holidays
-
     const holidayConflict = await checkHolidayConflicts(startDate, endDate, employeeId);
     if (holidayConflict) {
         return res.redirect(`/add-request?error=${encodeURIComponent(holidayConflict)}&employeeId=${employeeId}`);
     }
-
-    console.log(6)
-    
-    //const newRequest: HolidayRequest | RequestInterface = {
-    //   id: holidayRequests.length + 1,
-    //   employee_id: Number(employeeId),
-    //   start_date: new Date(startDate),
-    //   end_date: new Date(endDate),
-    //   status: "pending"
-    //}
     
     try {
         const newRequest = await createRequestObject(employeeId, startDate, endDate, holidayRequests);
-        console.log(7)
+
+        console.log(`Created requests: ${newRequest}`);
         
         const isDuplicate = await isDuplicateRequest(newRequest);
 
-        console.log(8)
 
         if (isDuplicate) {
             return res.redirect(`/add-request?error=Duplicate holiday request detected.&employeeId=${employeeId}`);
           } else {
-            console.log(9)
-            await dbWorker.createRequest(newRequest)  /////////////////////////
+            await dbWorker.createRequest(newRequest)
           }
 
         console.log(`User with ${newRequest.employee_id} id create new Holiday Request ` + 
