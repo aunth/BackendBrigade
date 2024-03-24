@@ -2,7 +2,7 @@
 export interface Employee {
     id: number;
     name: string;
-    department: DepartmentValues;
+    //department: DepartmentValues;
     department_id: number;
     country: string;
     remaining_holidays: number;

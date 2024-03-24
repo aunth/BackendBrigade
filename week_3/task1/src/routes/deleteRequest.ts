@@ -13,7 +13,6 @@ import { RequestInterface } from '../database_integration/models';
 import { Types } from 'mongoose';
 import { dbConnector, DatabaseType } from '../database_integration/db';
 
-
 const router = express.Router();
 
 router.get('/', async(req: Request, res: Response) => {

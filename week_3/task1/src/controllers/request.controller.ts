@@ -28,7 +28,7 @@ class RequestController {
             return employeeRequests;
         } catch (error) {
             console.error(error);
-            return [];
+            return null;
         }
     }
 
@@ -48,10 +48,10 @@ class RequestController {
             let requestToUpdate = await requestRepository.findOneBy({ id: parseInt(requestId, 10) });
             if (!requestToUpdate) {
                 console.error(`Request with ID ${requestId} not found.`);
-                return;
+                return null;
             }
             requestRepository.merge(requestToUpdate, updatedRequest);
-            await requestRepository.save(requestToUpdate);
+            return await requestRepository.save(requestToUpdate);
             console.log(`Request ${requestId} updated successfully.`);
         } catch (error) {
             console.error(`Error updating request with ID ${requestId}:`, error);

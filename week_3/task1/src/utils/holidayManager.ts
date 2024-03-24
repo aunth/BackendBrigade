@@ -70,6 +70,7 @@ export async function validateRequestDates(startDate: string, endDate: string, e
       }
     }
 
+    // check for blackout
   const blackoutPeriods = await dbWorker.getBlackoutPeriods(department?.id);
   if (blackoutPeriods == undefined) {
     console.log(`Department with id: ${department._id}`)
@@ -139,6 +140,34 @@ export async function isDuplicateRequest(newRequest: HolidayRequest | RequestInt
     });
     return duplicate;
 }
+
+
+export async function createRequestObject(employeeId: string | Types.ObjectId, startDate: Date, endDate: Date, holidayRequests: Array<any>): Promise<HolidayRequest | RequestInterface> {
+  const start_date = new Date(startDate.toLocaleDateString('en-CA'));
+  const end_date = new Date(endDate.toLocaleDateString('en-CA'));
+  const status = "pending";
+  
+  if (!isNaN(Number(employeeId))) {
+      return {
+          id: holidayRequests.length + 1,
+          employee_id: Number(employeeId),
+          start_date,
+          end_date,
+          status
+      } as HolidayRequest;
+  } else if (Types.ObjectId.isValid(employeeId)) {
+      return {
+          _id: new Types.ObjectId(), 
+          employee_id: new Types.ObjectId(employeeId),
+          start_date,
+          end_date,
+          status
+      } as RequestInterface;
+  } else {
+      throw new Error('Invalid employeeId format');
+  }
+}
+
 
 export function saveHolidayRequests(requests: HolidayRequest[]) {
   try {
