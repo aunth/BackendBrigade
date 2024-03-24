@@ -1,7 +1,7 @@
 import { AppDataSource } from "../database";
 import { Request } from "../entity/Request";
 import { HolidayRequest } from "../types/types";
-//import { approveRequest } from '../utils/holidayManager';
+
 
 class RequestController {
     async getRequest(id: string) {
@@ -27,7 +27,6 @@ class RequestController {
             const employeeRequests = await requestRepository.findBy({ employee_id: employeeId });
             return employeeRequests;
         } catch (error) {
-            //console.error(error);
             throw error;
         }
     }
@@ -52,10 +51,8 @@ class RequestController {
             }
             requestRepository.merge(requestToUpdate, updatedRequest);
             return await requestRepository.save(requestToUpdate);
-            //console.log(`Request ${requestId} updated successfully.`);
         } catch (error) {
             throw error;
-            console.error(`Error updating request with ID ${requestId}:`, error);
         }
     }
 
@@ -72,7 +69,6 @@ class RequestController {
             await requestRepository.update(requestIdNumber, { status: action });
 
             if (action === 'approved') {
-                //await approveRequest(requestIdNumber as any); ////////////////// fix ////////////////////
                 console.log(`Request ${requestId} status updated to approved.`);
             } else {
                 console.log(`Request ${requestId} status updated to rejected.`);

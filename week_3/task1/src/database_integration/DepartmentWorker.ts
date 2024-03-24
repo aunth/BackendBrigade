@@ -1,8 +1,6 @@
-import mongoose, { Document, Model } from 'mongoose';
 import { DepartmentModel, BlackoutPeriodModel, BlackoutPeriodInterface, DepartmentInterface } from './models'; // Assuming models.ts is in the same directory
 import { DepartmentValues, Employee, HolidayRule } from './../types/types';
 import { Types } from 'mongoose';
-import { employeeWorker } from './EmployeeWorker';
 import { blackoutPeriodWorker } from './HolidayWorker';
 
 
@@ -16,8 +14,6 @@ class DepartmentWorker {
   
 		for (department in holidayRulesByDepartment) {
 			const departmentRules = holidayRulesByDepartment[department] as HolidayRule;
-
-			console.log(departmentRules.blackoutPeriods);
 
 			let newHoliday = new BlackoutPeriodModel({
 				_id: new Types.ObjectId(),
@@ -59,7 +55,7 @@ class DepartmentWorker {
 	  return savedDepartment;
 	} catch (error) {
 	  console.error('Error inserting department:', error);
-	  throw error; // Re-throw the error for further handling
+	  throw error;
 	}
   }
 
@@ -69,7 +65,7 @@ class DepartmentWorker {
       return departments as DepartmentInterface[]; // Ensure explicit typing
     } catch (error) {
       console.error('Error reading departments:', error);
-      throw error; // Re-throw for further handling
+      throw error;
     }
   }
 
@@ -80,16 +76,14 @@ class DepartmentWorker {
 	  return savedDepartments;
 	} catch (error) {
 	  console.error('Error inserting departments:', error);
-	  throw error; // Re-throw the error for further handling
+	  throw error;
 	}
   }
 
   async getBlackoutPeriod(id: Types.ObjectId) {
 	try {
 		const Department = await this.getDepartment(id);
-		console.log(Department);
 		const blackout_periods = await blackoutPeriodWorker.findBlackoutPeriod({_id: Department?.blackout_periods[0]});
-		console.log(`Holiday is ${blackout_periods}`);
 		const periods = blackout_periods.map((period: BlackoutPeriodInterface) => ({
 			start_date: period.start_date,
 			end_date: period.end_date,
@@ -97,7 +91,7 @@ class DepartmentWorker {
 		return periods;
 	  } catch (error) {
 		console.error('Error getting blackout periods departments:', error);
-		throw error; // Re-throw the error for further handling
+		throw error;
 	  }
   }
 
@@ -124,7 +118,7 @@ class DepartmentWorker {
 	  }
 	} catch (error) {
 	  console.error('Error updating department:', error);
-	  throw error; // Re-throw the error for further handling
+	  throw error;
 	}
   }
 
@@ -134,14 +128,14 @@ class DepartmentWorker {
 
 	  if (deletedDepartment) {
 		console.log(`Department ${deletedDepartment.name} deleted successfully.`);
-		return deletedDepartment as DepartmentInterface; // Ensure explicit typing
+		return deletedDepartment as DepartmentInterface;
 	  } else {
 		console.warn(`Department with ID ${departmentId} not found.`);
 		return null;
 	  }
 	} catch (error) {
 	  console.error('Error deleting department:', error);
-	  throw error; // Re-throw the error for further handling
+	  throw error;
 	}
   }
 

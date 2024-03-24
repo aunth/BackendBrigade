@@ -1,13 +1,7 @@
 
 import express, {Response, Request} from 'express'
 import { getNameById } from '../utils/utils';
-//import { getEmployees, getHolidayRequests} from '../utils/dataManager';
 import { HolidayRequest} from '../types/types';
-
-import { requestController } from '../controllers/request.controller';
-import { employeeController } from '../controllers/employee.controller';
-import { departmentController } from '../controllers/department.controller';
-import { blackoutPeriodsController } from '../controllers/blackoutperiods.controller';
 import { dbWorker } from '../database_integration/DataBaseWorker';
 import { RequestInterface } from '../database_integration/models';
 import { Types } from 'mongoose';

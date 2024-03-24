@@ -1,12 +1,7 @@
 import express, {Response, Request} from 'express';
-import { HolidayRequest} from '../types/types';
-//import { getEmployees, getHolidayRequests, updateHolidayRequest} from '../utils/dataManager';
 import { validateRequestDates, checkHolidayConflicts, isDuplicateRequest, getPublicHolidays} from '../utils/holidayManager';
-import { findEmploee, getNameById } from '../utils/utils';
 import { Types } from 'mongoose';
 import { dbWorker } from '../database_integration/DataBaseWorker';
-import { requestController } from '../controllers/request.controller';
-import { employeeController } from '../controllers/employee.controller';
 import { DatabaseType, dbConnector } from '../database_integration/db';
 import { updateRequestObject } from '../utils/holidayManager';
 
@@ -27,8 +22,7 @@ router.get('/', async(req: Request, res: Response) => {
         try {
         const publicHolidays = await getPublicHolidays(employeeId);
         const holidayRequests = await dbWorker.getHolidayRequestsByEmployeeId(employeeId);
-        console.log('holidayRequests', holidayRequests);
-        console.log(holidayRequests);
+    
         if (holidayRequests != null && holidayRequests.length == 0) {
             return res.render('update-request', { 
                 error: 'No holiday requests found for this user. Please create a request first.',
@@ -49,13 +43,6 @@ router.put('/', async(req: Request, res: Response) => {
     const { idForRequest, employeeId, startDate, endDate } = req.body;
 
     const requestID = idForRequest;
-    
-    //let requestID: string | Types.ObjectId | number = req.query.employeeId as string;
-    //if (dbConnector.currentDatabaseType == DatabaseType.MongoDB) {
-    //    requestID = new Types.ObjectId(requestID);
-    //} else {
-    //    requestID = Number(requestID);
-    //}
     
     
     if (!employeeId || !startDate || !endDate || !idForRequest) {
@@ -85,18 +72,6 @@ router.put('/', async(req: Request, res: Response) => {
 
     const updatedRequest = await updateRequestObject(employeeId, startDate, endDate);
     
-    
-    //const updatedRequest = await dbWorker.updateRequest(requestID, {
-    //    start_date: startDate, end_date: endDate });
-    //if (updatedRequest == null) {
-    //    console.log(`Something went wrong with updating request ${holidayRequest}`);
-    //    return ;
-    //}
-
-    //const newRequest = {
-    //   start_date: new Date(startDate),
-    //   end_date: new Date(endDate)
-    //}
 
     if (await isDuplicateRequest(updatedRequest)) {
         return res.json({success: true, redirectUrl: `/update-request?error=Duplicate holiday request detected.&employeeId=${employeeId}`});

@@ -1,55 +1,9 @@
-import mongoose, { Document, Model } from 'mongoose';
 import { EmployeeModel, EmployeeInterface } from './models';
 import { Employee } from '../types/types';
-import { departmentWorker } from './DepartmentWorker';
 import { Types } from 'mongoose';
-import { blackoutPeriodWorker } from './HolidayWorker';
-import { requestWorker } from './RequestWorker';
-import { dbWorker } from './DataBaseWorker';
 
 
 class EmployeesWorker {
-
-//   async insertOne(employee: EmployeeInterface): Promise<EmployeeInterface> {
-// 	try {
-// 		const holidayRequests = await dbWorker.getHolidayRequestsByEmployee(employee._id);
-// 		if (holidayRequests.length == 0) {
-// 			console.log(`Employee with ${employee.id} id has no requests`);
-// 		} 
-// 		const department = await departmentWorker.getDepartment(employee.department)
-// 		console.log(department);
-
-// 		if (!department) {
-// 			console.log(`User with name ${employee.name} doens't have a department`);
-// 		}
-
-// 		const newEmployee = new EmployeeModel({
-// 			_id: new Types.ObjectId(),
-// 			name: employee.name,
-// 			department: department?._id,
-// 			country: employee.country,
-// 			remaining_holidays: employee.remaining_holidays,
-// 		});
-
-// 		for (let i = 0; i < holidayRequests.length; i++) {
-// 			const object = holidayRequests[i];
-// 			requestWorker.createRequest({
-// 				_id: new Types.ObjectId(),
-// 				employee_id: newEmployee._id,
-// 				start_date: object.start_date,
-// 				end_date: object.end_date,
-// 				status: object.status,
-// 			})
-// 		}
-
-// 		const savedEmployee = await newEmployee.save();
-// 		console.log(`Employee ${employee.name} saved successfully.`);
-// 		return savedEmployee;
-// 	} catch (error) {
-// 	  console.error('Error inserting employee:', error);
-// 	  throw error;
-// 	}
-//   }
 
 	async insertEmployee(employeeData: EmployeeInterface): Promise<EmployeeInterface> {
     	try {
@@ -85,7 +39,7 @@ class EmployeesWorker {
 	  return savedEmployees;
 	} catch (error) {
 	  console.error('Error inserting employees:', error);
-	  throw error; // Re-throw the error for further handling
+	  throw error;
 	}
   }
 
@@ -109,10 +63,10 @@ class EmployeesWorker {
   async getById(_id: Types.ObjectId): Promise<EmployeeInterface | null> {
     try {
       const employee = await EmployeeModel.findById(_id);
-      return employee; // Ensure explicit typing
+      return employee;
     } catch (error) {
       console.error('Error reading employee:', error);
-      throw error; // Re-throw for further handling
+      throw error;
     }
   }
 

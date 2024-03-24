@@ -1,14 +1,7 @@
 import { DatabaseType, DBConnector } from '../database_integration/db';
 import { uri } from '../database_integration/db';
 import { AppDataSource } from '../database';
-import express, {Response, Request} from 'express';
-import { HolidayRequest} from '../types/types';
-//import { getEmployees, getHolidayRequests, saveHolidayRequest} from '../utils/dataManager';
-//import { validateRequestDates, checkHolidayConflicts, isDuplicateRequest, getPublicHolidays} from '../utils/holidayManager';
-import { findEmploee } from '../utils/utils';
-import { requestController } from '../controllers/request.controller';
-import { employeeController } from '../controllers/employee.controller';
-import { dbWorker } from '../database_integration/DataBaseWorker';
+import express from 'express';
 
 
 const router = express.Router();
@@ -17,7 +10,6 @@ const dbConnector = DBConnector.getInstance(uri, AppDataSource);
 
 router.get('/:dbType', async (req, res) => {
     const dbType = req.params.dbType;
-    console.log(dbType);
     if (!Object.values(DatabaseType).includes(dbType as DatabaseType)) {
         return res.status(400).send('Invalid database type');
     }

@@ -1,10 +1,5 @@
 
 import express, {Response, Request} from 'express';
-import { getNameById } from '../utils/utils';
-//import { getHolidayRequests } from '../utils/dataManager';
-//import { approveRequest, rejectRequest } from '../utils/holidayManager';
-import { HolidayRequest } from '../types/types';
-import { requestController } from '../controllers/request.controller';
 import { dbWorker } from '../database_integration/DataBaseWorker';
 import { approveRequest, rejectRequest } from '../utils/holidayManager';
 
@@ -40,8 +35,6 @@ router.post('/approved/:requestId', async(req:Request, res:Response) => {
         res.status(500).send('An error occurred');
     }
 });
-
-//router.post('/rejected/:requestId', requestController.updateRequestStatus);
 
 router.post('/rejected/:requestId', async(req:Request, res:Response) => {
     try {
