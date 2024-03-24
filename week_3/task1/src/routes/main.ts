@@ -8,11 +8,13 @@ import { getEmployees } from '../utils/dataManager';
 import { EmployeeInterface } from '../database_integration/models';
 import { Employee } from '../types/types';
 import { getEmployeeId } from '../utils/utils';
+import { dbConnector } from '../database_integration/db';
 
 
 const router = express.Router();
 
 router.get('/', async (req: Request, res: Response) => {
+  await dbConnector.switchDatabase(DatabaseType.MongoDB);
   res.render('main');
 });
 

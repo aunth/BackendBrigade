@@ -24,6 +24,13 @@ export function getEmployees(id=0): Employee[] {
   }
 }
 
+export function getRequests(id: number) {
+  const rawData = fs.readFileSync(holidaysFilename, 'utf-8');
+  const jsonData: HolidayRequest[] = JSON.parse(rawData);
+  return jsonData.filter(request => request.employee_id == id);
+
+}
+
 function saveEmployeesToJson(employees: Employee[]) {
  try {
      const jsonData = JSON.stringify(employees, null, 2);

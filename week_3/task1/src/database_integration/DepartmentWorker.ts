@@ -34,7 +34,6 @@ class DepartmentWorker {
   
 		departmentDocs.push(newDepartment);
 		holidayDocs.push(newHoliday);
-		console.log(departmentRules);
 		}
   
 		try {

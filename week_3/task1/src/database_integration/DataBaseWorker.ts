@@ -6,7 +6,7 @@ import { Employee, DepartmentSQL, HolidayRequest } from "../types/types";
 import { DBConnector, DatabaseType } from "./db";
 import { EmployeeInterface, BlackoutPeriodInterface, EmployeeModel, DepartmentInterface, RequestInterface } from "./models";
 import { Types } from "mongoose";
-import { getEmployees } from "../utils/dataManager";
+import { getEmployees, getRequests } from "../utils/dataManager";
 import { holidayRulesByDepartment } from "../../data/dataStore";
 import { employeeController } from "../controllers/employee.controller"
 import { departmentController } from "../controllers/department.controller";
@@ -258,7 +258,7 @@ export class DBWorker {
     }
 
     async getHolidayRequestsByEmployee(employeeId: Types.ObjectId | string) {
-       if (this.dbConnector.currentDatabaseType === DatabaseType.PostgreSQL) {
+       if (this.dbConnector.currentDatabaseType === DatabaseType.MongoDB) {
 			return await requestWorker.findRequestsByEmployeeId(employeeId as Types.ObjectId);
        } else {
            //return await requestController.getEmployeeRequests(employeeId);
@@ -267,19 +267,35 @@ export class DBWorker {
     }
 
     async getEmployeesFromObject() {
-        const employees: Employee[] = getEmployees();
+        const employees = getEmployees();
         for (let employee of employees) {
-            const departmentId = await dbWorker.getDepartmentIdByName(employee.name);
-            // Check if departmentId is null, if so, assign an empty ObjectId
+            const departmentId = await dbWorker.getDepartmentIdByName(employee.department);
             const departmentObjectId = departmentId ? departmentId._id : new Types.ObjectId();
-    
-            await employeeWorker.insertOne({
+
+            const emp = {
                 _id: new Types.ObjectId(),
                 name: employee.name,
                 department: departmentObjectId,
                 country: employee.country,
                 remaining_holidays: employee.remaining_holidays,
-            } as EmployeeInterface);
+            }
+            
+            await employeeWorker.insertEmployee(emp as EmployeeInterface);
+            
+            const requests = getRequests(employee.id);
+            
+            for (let request of requests) {
+            
+                await requestWorker.createRequest({
+                    _id: new Types.ObjectId(),
+                    employee_id: emp._id,
+                    start_date: request.start_date,
+                    end_date: request.end_date,
+                    status: request.status,
+                });
+            }
+            
+            
         }
     }
     
@@ -313,6 +329,11 @@ export class DBWorker {
            console.error('Error updating holiday:', error);
            throw error; // Re-throw for further handling
        }
+    }
+
+    async copyDataFromJson() {
+        await dbWorker.getDepartmentsFromObject();
+        await dbWorker.getEmployeesFromObject();
     }
 }
 

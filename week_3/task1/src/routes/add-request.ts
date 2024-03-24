@@ -21,8 +21,8 @@ router.get('/', async(req: Request, res: Response) => {
     if (employeeId == undefined) {
         console.log('EmployeeId didn\'t passed as a parametre');
         return res.render('/');
-    } 
-    const publicHolidays = await getPublicHolidays(employeeId);
+    }
+    const publicHolidays = await getPublicHolidays(employeeId as any);
     res.render('add-request', {error: error, publicHolidays: publicHolidays, employeeId: employeeId});
 });
 

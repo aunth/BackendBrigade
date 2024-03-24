@@ -7,19 +7,29 @@ import { Types } from 'mongoose';
 import { dbWorker } from '../database_integration/DataBaseWorker';
 import { requestController } from '../controllers/request.controller';
 import { employeeController } from '../controllers/employee.controller';
+import { DatabaseType, dbConnector } from '../database_integration/db';
 
 const router = express.Router();
 
 
 router.get('/', async(req: Request, res: Response) => {
     const error = req.query.error;
-    const employeeId = req.query.employeeId as string;
+    let employeeId: string | Types.ObjectId | number = req.query.employeeId as string;
+    if (dbConnector.currentDatabaseType == DatabaseType.MongoDB) {
+        employeeId = new Types.ObjectId(employeeId);
+    } else {
+        employeeId = Number(employeeId);
+    }
     if (employeeId == undefined) {
         console.log(`Cannot find id for employee`);
     } else {
         try {
         const publicHolidays = await getPublicHolidays(employeeId);
         const holidayRequests = await dbWorker.getHolidayRequestsByEmployeeId(employeeId);
+        console.log(holidayRequests);
+        if (holidayRequests.length == 0) {
+            return res.json({success: true, redirectUrl: `update-request?error=Employee with name ${(await dbWorker.getEmployeeById(employeeId))?.name}`})
+        }
         res.render('update-request', {error: error, publicHolidays: publicHolidays, holidayRequests: holidayRequests, employeeId: employeeId});
         } catch (error) {
             console.log(`Error with getUpdating of the Request: ${error}`);
@@ -37,8 +47,6 @@ router.put('/', async(req: Request, res: Response) => {
         return res.json({success: true, redirectUrl: `/update-request?error=Invalid input&employeeId=${employeeId}`});
     }
 
-    // let holidayRequests: HolidayRequest[] = await requestController.getAllRequests();
-    // const requestIndex = holidayRequests.findIndex(request => request.id === requestID);
     const holidayRequest = await dbWorker.getRequestById(requestID);
     const employee = await dbWorker.getEmployeeById(employeeId);
 

@@ -10,46 +10,63 @@ import { dbWorker } from './DataBaseWorker';
 
 class EmployeesWorker {
 
-  async insertOne(employee: EmployeeInterface): Promise<EmployeeInterface> {
-	try {
-		const holidayRequests = await dbWorker.getHolidayRequestsByEmployee(employee._id);
-		if (holidayRequests.length == 0) {
-			console.log(`Employee with ${employee.id} id has no requests`);
-		} 
-		const department = await departmentWorker.getDepartment(employee.department)
-		console.log(department);
+//   async insertOne(employee: EmployeeInterface): Promise<EmployeeInterface> {
+// 	try {
+// 		const holidayRequests = await dbWorker.getHolidayRequestsByEmployee(employee._id);
+// 		if (holidayRequests.length == 0) {
+// 			console.log(`Employee with ${employee.id} id has no requests`);
+// 		} 
+// 		const department = await departmentWorker.getDepartment(employee.department)
+// 		console.log(department);
 
-		if (!department) {
-			console.log(`User with name ${employee.name} doens't have a department`);
-		}
+// 		if (!department) {
+// 			console.log(`User with name ${employee.name} doens't have a department`);
+// 		}
 
-		const newEmployee = new EmployeeModel({
-			_id: new Types.ObjectId(),
-			name: employee.name,
-			department: department?._id,
-			country: employee.country,
-			remaining_holidays: employee.remaining_holidays,
-		});
+// 		const newEmployee = new EmployeeModel({
+// 			_id: new Types.ObjectId(),
+// 			name: employee.name,
+// 			department: department?._id,
+// 			country: employee.country,
+// 			remaining_holidays: employee.remaining_holidays,
+// 		});
 
-		for (let i = 0; i < holidayRequests.length; i++) {
-			const object = holidayRequests[i];
-			requestWorker.createRequest({
-				_id: new Types.ObjectId(),
-				employee_id: newEmployee._id,
-				start_date: object.start_date,
-				end_date: object.end_date,
-				status: object.status,
-			})
-		}
+// 		for (let i = 0; i < holidayRequests.length; i++) {
+// 			const object = holidayRequests[i];
+// 			requestWorker.createRequest({
+// 				_id: new Types.ObjectId(),
+// 				employee_id: newEmployee._id,
+// 				start_date: object.start_date,
+// 				end_date: object.end_date,
+// 				status: object.status,
+// 			})
+// 		}
 
-		const savedEmployee = await newEmployee.save();
-		console.log(`Employee ${employee.name} saved successfully.`);
-		return savedEmployee;
-	} catch (error) {
-	  console.error('Error inserting employee:', error);
-	  throw error;
+// 		const savedEmployee = await newEmployee.save();
+// 		console.log(`Employee ${employee.name} saved successfully.`);
+// 		return savedEmployee;
+// 	} catch (error) {
+// 	  console.error('Error inserting employee:', error);
+// 	  throw error;
+// 	}
+//   }
+
+	async insertEmployee(employeeData: EmployeeInterface): Promise<EmployeeInterface> {
+    	try {
+    	    // Create a new document using the provided employeeData
+    	    const newEmployee = new EmployeeModel(employeeData);
+
+    	    // Save the new document to the database
+    	    const savedEmployee = await newEmployee.save();
+
+    	    // Return the saved document
+    	    return savedEmployee;
+    	} catch (error) {
+    	    // Handle any errors that occur during insertion
+    	    console.error('Error inserting employee:', error);
+    	    throw error;
+    	}
 	}
-  }
 
   async getByName(name: string): Promise<EmployeeInterface | null> {
 	try {

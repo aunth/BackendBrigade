@@ -2,7 +2,7 @@
 export interface Employee {
     id: number;
     name: string;
-    //department: DepartmentValues;
+    department: DepartmentValues;
     department_id: number;
     country: string;
     remaining_holidays: number;
@@ -28,12 +28,6 @@ export enum DepartmentValues {
     start_date: Date;
     end_date: Date;
     status: 'pending' | 'approved' | 'rejected';
-  }
-
-  export interface DepartmentSQL {
-    id: number,
-    name: string,
-    max_consecutive_days: number,
   }
 
   //export interface HolidayRequestForSQL {
