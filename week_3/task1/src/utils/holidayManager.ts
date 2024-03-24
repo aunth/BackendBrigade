@@ -1,9 +1,7 @@
 import axios from 'axios';
 import { Employee, Holiday, HolidayRequest} from '../types/types';
-//import { getEmployees, getHolidayRequests } from './dataManager';
 import { getCountryById } from './utils';
 import { holidayRulesByDepartment } from '../../data/dataStore';
-//import { updateEmployeeRemainingHolidays } from './dataManager';
 import { getDaysNum } from './utils';
 import * as fs from 'fs';
 import { Types } from 'mongoose';
@@ -16,7 +14,7 @@ import { requestController } from '../controllers/request.controller';
 import { employeeController } from '../controllers/employee.controller';
 import { departmentController } from '../controllers/department.controller';
 import { blackoutPeriodsController } from '../controllers/blackoutperiods.controller';
-import { DBConnector, DatabaseType } from '../database_integration/db';
+import { DBConnector, DatabaseType, dbConnector } from '../database_integration/db';
 import { Department } from '../entity/Department';
 import { DepartmentInterface, EmployeeInterface, RequestInterface } from '../database_integration/models';
 
@@ -41,8 +39,6 @@ export async function validateRequestDates(startDate: string, endDate: string, e
   const start = new Date(startDate);
   const end = new Date(endDate);
 
-  console.log("validateRequestDates", start);
-  console.log("validateRequestDates", end);
 
   if (start > end) {
       return 'Start date must be before end date';
@@ -53,8 +49,7 @@ export async function validateRequestDates(startDate: string, endDate: string, e
 
   const department = await dbWorker.getDepartment(employee);
 
-
-  if (department == undefined) {
+  if (!department) {
     console.log(`Error with processing of ${department}`);
   } else {
     if (DBConnector) {
@@ -70,8 +65,10 @@ export async function validateRequestDates(startDate: string, endDate: string, e
       }
     }
 
-    // check for blackout
-  const blackoutPeriods = await dbWorker.getBlackoutPeriods(department?.id);
+    console.log('before get blackout periods');
+
+  const blackoutPeriods = await dbWorker.getBlackoutPeriods(department?._id ? department._id : 0);
+  console.log('After get blackout periods');
   if (blackoutPeriods == undefined) {
     console.log(`Department with id: ${department._id}`)
   } else {
@@ -85,8 +82,10 @@ export async function validateRequestDates(startDate: string, endDate: string, e
     console.log("blackoutStart", blackoutStart);
     console.log("blackoutEnd", blackoutEnd);
 
+    console.log( (start <= blackoutEnd && start >= blackoutStart) || (end <= blackoutEnd && end >= blackoutStart) || (start <= blackoutEnd && end >= blackoutStart))
+
    
-    return (start <= blackoutEnd && start >= blackoutStart) || (end <= blackoutEnd && end >= blackoutStart) || (start <= blackoutEnd && end >= blackoutStart)
+    return (start <= blackoutEnd && start >= blackoutStart) || (end <= blackoutEnd && end >= blackoutStart) || (start <= blackoutEnd && end >= blackoutStart);
   });
 
   if (hasBlackoutPeriod) {
@@ -111,6 +110,8 @@ export async function checkHolidayConflicts(startDate: Date, endDate: Date, empl
         const holidayDate = new Date(holiday.date);
         return start <= holidayDate && holidayDate <= end;
       });
+
+      console.log(`HolidaysData: ${holidayConflict}`);
   
       if (holidayConflict.length > 0) {
         let dates = holidayConflict.map((holiday: Holiday) => holiday.date).join(', ');
@@ -155,6 +156,7 @@ export async function createRequestObject(employeeId: string | Types.ObjectId, s
           status
       } as HolidayRequest;
   } else if (Types.ObjectId.isValid(employeeId)) {
+    console.log("Here i have crate new request")
       return {
           _id: new Types.ObjectId(), 
           employee_id: new Types.ObjectId(employeeId),
@@ -200,7 +202,7 @@ export function saveHolidayRequests(requests: HolidayRequest[]) {
   }
 }
 
-export async function rejectRequest(requestId: number | Types.ObjectId) {
+export async function rejectRequest(requestId: string | Types.ObjectId) {
  await dbWorker.updateRequest(requestId as Types.ObjectId, {status: 'rejected'});
  console.log(`Request with ${requestId} was rejected`);
 }
@@ -226,8 +228,13 @@ export async function approveRequest(requestId: Types.ObjectId |string) {
 
   if (takenDays >= 0) {
       await dbWorker.updateRequest(requestId as Types.ObjectId, {status: 'approved'});
-      await dbWorker.updateEmployeeById(employee.id, {remaining_holidays: employee.remaining_holidays - takenDays});
+      if (dbConnector.currentDatabaseType == DatabaseType.MongoDB) {
+        await dbWorker.updateEmployeeById((employee as EmployeeInterface)._id, {remaining_holidays: employee.remaining_holidays - takenDays});
+      } else {
+        await employeeController.updateEmployeeRemainingHolidays((employee as Employee).id, takenDays);
+      }
       console.log('Request approved');
+      
   } else {
       console.log('Insufficient remaining holidays');
   }

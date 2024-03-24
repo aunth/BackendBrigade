@@ -1,6 +1,5 @@
 
 import { Employee, HolidayRequest } from '../types/types';
-//import { getEmployees, getHolidayRequests } from '../utils/dataManager';
 import express, { Request, Response } from 'express';
 import { employeeController } from "../controllers/employee.controller";
 import { requestController } from "../controllers/request.controller";
@@ -11,9 +10,7 @@ const router = express.Router();
 
 router.get('/', async(req: Request, res: Response) => {
     const employees =  await dbWorker.getEmployees();
-    console.log("employees", employees);
     const holidayRequests = await dbWorker.getRequests();
-    console.log("holidayRequests", holidayRequests)
     res.render('employees', {employees, holidayRequests});
 });
 

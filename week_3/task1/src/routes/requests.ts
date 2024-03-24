@@ -6,26 +6,21 @@ import { getNameById } from '../utils/utils';
 import { HolidayRequest } from '../types/types';
 import { requestController } from '../controllers/request.controller';
 import { dbWorker } from '../database_integration/DataBaseWorker';
+import { approveRequest, rejectRequest } from '../utils/holidayManager';
 
 const router = express.Router();
 
-//router.get('/', requestController.getRequests);
 
 router.get('/', async(req:Request, res:Response) => {
     try {
         const holidayRequests = await dbWorker.getRequests();
-        const requestsWithNames = await Promise.all(holidayRequests.map(async (request) => {
-            const employeeName = await getNameById(request.employee_id);
-            return { ...request, employeeName };
-        }));
-        res.render('requests', { holidayRequests: requestsWithNames});
+        const employees = await dbWorker.getEmployees();
+        res.render('requests', { holidayRequests: holidayRequests, employees});
     } catch (error) {
-    // Handle error appropriately
     console.error(error);
     res.status(500).send("An error occurred");
 }});
 
-//router.post('/approved/:requestId', requestController.updateRequestStatus);
 
 router.post('/approved/:requestId', async(req:Request, res:Response) => {
     try {
@@ -37,7 +32,7 @@ router.post('/approved/:requestId', async(req:Request, res:Response) => {
         }
 
 
-        await requestController.updateRequestStatus(action, requestId);
+        await approveRequest(requestId);
 
         res.sendStatus(200);
     } catch (error) {
@@ -57,7 +52,7 @@ router.post('/rejected/:requestId', async(req:Request, res:Response) => {
             return res.status(400).json({ error: 'Invalid action provided' });
         }
 
-        await requestController.updateRequestStatus(action, requestId);
+        await rejectRequest(requestId);
 
         res.sendStatus(200);
     } catch (error) {

@@ -81,9 +81,9 @@ export class RequestWorker {
     }
   }
 
-  async findRequestsByEmployeeId(employeeId: Types.ObjectId): Promise<RequestInterface[]> {
+  async findRequestsByEmployeeId(employee_id: Types.ObjectId): Promise<RequestInterface[]> {
     try {
-      const requests = await RequestModel.find({ employeeId });
+      const requests = await RequestModel.find({ employee_id });
       return requests;
     } catch (error) {
       console.error('Error finding requests by employee ID:', error);
