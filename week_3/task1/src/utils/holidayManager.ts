@@ -142,14 +142,13 @@ export async function isDuplicateRequest(newRequest: HolidayRequest | RequestInt
 }
 
 
-export async function createRequestObject(employeeId: string | Types.ObjectId, startDate: Date, endDate: Date, holidayRequests: Array<any>): Promise<HolidayRequest | RequestInterface> {
-  const start_date = new Date(startDate.toLocaleDateString('en-CA'));
-  const end_date = new Date(endDate.toLocaleDateString('en-CA'));
+export async function createRequestObject(employeeId: string | Types.ObjectId, startDate: string, endDate: string): Promise<HolidayRequest | RequestInterface> {
+  const start_date = new Date(startDate);
+  const end_date = new Date(endDate);
   const status = "pending";
   
   if (!isNaN(Number(employeeId))) {
       return {
-          id: holidayRequests.length + 1,
           employee_id: Number(employeeId),
           start_date,
           end_date,
@@ -162,6 +161,28 @@ export async function createRequestObject(employeeId: string | Types.ObjectId, s
           start_date,
           end_date,
           status
+      } as RequestInterface;
+  } else {
+      throw new Error('Invalid employeeId format');
+  }
+}
+
+
+export async function updateRequestObject(employeeId: string | Types.ObjectId, startDate: string, endDate: string): Promise<HolidayRequest | RequestInterface> {
+  const start_date = new Date(startDate);
+  const end_date = new Date(endDate);
+  
+  if (!isNaN(Number(employeeId))) {
+      return { 
+        employee_id: Number(employeeId),
+        start_date,
+        end_date,
+      } as HolidayRequest;
+  } else if (Types.ObjectId.isValid(employeeId)) {
+      return {
+        employee_id: new Types.ObjectId(employeeId),
+        start_date,
+        end_date,
       } as RequestInterface;
   } else {
       throw new Error('Invalid employeeId format');

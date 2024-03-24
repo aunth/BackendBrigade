@@ -21,14 +21,14 @@ class RequestController {
         }
     }
 
-    async getEmployeeRequests(employeeId: string) {
+    async getEmployeeRequests(employeeId: number) {
         const requestRepository = AppDataSource.getRepository(Request);
         try {
-            const employeeRequests = await requestRepository.findBy({ id: parseInt(employeeId, 10) });
+            const employeeRequests = await requestRepository.findBy({ employee_id: employeeId });
             return employeeRequests;
         } catch (error) {
-            console.error(error);
-            return null;
+            //console.error(error);
+            throw error;
         }
     }
 
@@ -42,7 +42,7 @@ class RequestController {
         }
     }
 
-    async updateHolidayRequest(requestId: string, updatedRequest: Partial<Request>) {
+    async updateHolidayRequest(requestId: string, updatedRequest: Partial<HolidayRequest>) {
         const requestRepository = AppDataSource.getRepository(Request);
         try {
             let requestToUpdate = await requestRepository.findOneBy({ id: parseInt(requestId, 10) });
@@ -52,8 +52,9 @@ class RequestController {
             }
             requestRepository.merge(requestToUpdate, updatedRequest);
             return await requestRepository.save(requestToUpdate);
-            console.log(`Request ${requestId} updated successfully.`);
+            //console.log(`Request ${requestId} updated successfully.`);
         } catch (error) {
+            throw error;
             console.error(`Error updating request with ID ${requestId}:`, error);
         }
     }

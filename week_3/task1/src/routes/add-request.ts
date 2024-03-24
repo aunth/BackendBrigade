@@ -48,7 +48,7 @@ router.post('/',  async(req: Request, res: Response) => {
     console.log(2);
 
     //let employees = await employeeController.getEmployees();
-    let holidayRequests = await dbWorker.getRequests();
+    //let holidayRequests = await dbWorker.getRequests();
     
     //dbWorker.getHolidayDetails
     console.log(3);
@@ -86,7 +86,7 @@ router.post('/',  async(req: Request, res: Response) => {
     //}
     
     try {
-        const newRequest = await createRequestObject(employeeId, startDate, endDate, holidayRequests);
+        const newRequest = await createRequestObject(employeeId, startDate, endDate);
         console.log(7)
         
         const isDuplicate = await isDuplicateRequest(newRequest);

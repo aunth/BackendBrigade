@@ -14,7 +14,6 @@ import { dbConnector } from '../database_integration/db';
 const router = express.Router();
 
 router.get('/', async (req: Request, res: Response) => {
-  await dbConnector.switchDatabase(DatabaseType.MongoDB);
   res.render('main');
 });
 
@@ -22,13 +21,16 @@ router.post('/request-action', async (req, res) => {
   const { employeeName, action } = req.body;
 
   try {
+    console.log(1);
     const employee = await dbWorker.getEmployeeByName(employeeName);
-    console.log(employee);
+    console.log(2);
+    console.log("employee", employee);
     if (!employee) {
       res.status(404).send(`Employee with name ${employeeName} does not exist.`);
       return;
     } else {
       const employee_id = await getEmployeeId(employee);
+      console.log("employee_id", employee_id)
       switch (action) {
         case 'create':
             res.redirect(`/add-request?employeeId=${encodeURIComponent(employee_id)}`);

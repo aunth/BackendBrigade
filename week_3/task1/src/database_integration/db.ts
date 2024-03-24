@@ -39,6 +39,8 @@ export class DBConnector {
             return;
         }
 
+        await this.disconnectCurrentDatabase();
+
         this.currentDatabaseType = databaseType;
 
         // Disconnect from all databases first to ensure a clean switch
@@ -49,6 +51,16 @@ export class DBConnector {
             await mongoose.connect(this.mongoDBUri);
         } else if (databaseType === DatabaseType.PostgreSQL) {
             await this.pgDataSource.initialize();
+        }
+    }
+
+    async disconnectCurrentDatabase() {
+        if (this.currentDatabaseType === DatabaseType.MongoDB) {
+            await mongoose.disconnect();
+            console.log('Disconnected from MongoDB');
+        } else if (this.currentDatabaseType === DatabaseType.PostgreSQL) {
+            await this.pgDataSource.destroy();
+            console.log('Disconnected from PostgreSQL');
         }
     }
 }

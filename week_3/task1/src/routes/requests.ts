@@ -5,6 +5,7 @@ import { getNameById } from '../utils/utils';
 //import { approveRequest, rejectRequest } from '../utils/holidayManager';
 import { HolidayRequest } from '../types/types';
 import { requestController } from '../controllers/request.controller';
+import { dbWorker } from '../database_integration/DataBaseWorker';
 
 const router = express.Router();
 
@@ -12,7 +13,7 @@ const router = express.Router();
 
 router.get('/', async(req:Request, res:Response) => {
     try {
-        const holidayRequests = await requestController.getAllRequests();
+        const holidayRequests = await dbWorker.getRequests();
         const requestsWithNames = await Promise.all(holidayRequests.map(async (request) => {
             const employeeName = await getNameById(request.employee_id);
             return { ...request, employeeName };

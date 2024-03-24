@@ -12,6 +12,8 @@ import updateRequestRouter from './routes/update-request';
 import deleteRouter from './routes/deleteRequest';
 import switchDb from './routes/switchDb';
 import { DBConnector } from "./database_integration/db";
+import { dbConnector } from "./database_integration/db";
+import { DatabaseType } from "./database_integration/db";
 
 dotenv.config();
 
@@ -45,5 +47,6 @@ app.use('/add-request', addRequestsRouter);
 app.use('/update-request', updateRequestRouter)
 // Starting the server
 app.listen(port, () => {
+  dbConnector.switchDatabase(DatabaseType.MongoDB);
   console.log(`Server running at http://localhost:${port}`);
 });

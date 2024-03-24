@@ -27,9 +27,9 @@ router.get('/', async(req: Request, res: Response) => {
     } else {
         employeeId = Number(employeeId);
     }
-	const employeeHolidayRequests: HolidayRequest[] | RequestInterface[] = await dbWorker.getHolidayRequestsByEmployeeId(employeeId);
+	const employeeHolidayRequests: HolidayRequest[] | RequestInterface[] | null = await dbWorker.getHolidayRequestsByEmployeeId(employeeId);
 
-	const employeeName = getNameById(employeeId);
+	const employeeName = await getNameById(employeeId);
 
 	res.render('deleteRequest', {holidayRequests: employeeHolidayRequests, employeeName: employeeName});
 })
