@@ -107,21 +107,13 @@ export async function checkHolidayConflicts(startDate: Date, endDate: Date, empl
 }
 
 export async function isDuplicateRequest(newRequest: HolidayRequest | RequestInterface): Promise<boolean> {
-  console.log("New request + ", newRequest);
   const holidayRequests = await dbWorker.getRequests();
-  console.log('All requests: ' + holidayRequests);
   const duplicate = holidayRequests.some(request => {
-    console.log(`${newRequest.employee_id} vs ${request.employee_id} == ${newRequest.employee_id === request.employee_id}`);
       if (newRequest.employee_id == request.employee_id) {
           const existingStartDate = new Date(request.start_date);
           const existingEndDate = new Date(request.end_date);
           const newStartDate = new Date(newRequest.start_date);
           const newEndDate = new Date(newRequest.end_date);
-
-          console.log("Existing Start Date:", existingStartDate);
-          console.log("Existing End Date:", existingEndDate);
-          console.log("New Start Date:", newStartDate);
-          console.log("New End Date:", newEndDate);
 
           const isExactMatch = existingStartDate.getTime() == newStartDate.getTime() &&
                               existingEndDate.getTime() == newEndDate.getTime();
@@ -223,7 +215,8 @@ export async function approveRequest(requestId: Types.ObjectId |string) {
       } else {
         await employeeController.updateEmployeeRemainingHolidays((employee as Employee).id, takenDays);
       }
-      console.log('Request approved');
+      console.log(`Request with ${requestId} was approved`);
+
       
   } else {
       console.log('Insufficient remaining holidays');
