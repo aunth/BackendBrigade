@@ -1,13 +1,9 @@
 import express, {Response, Request} from 'express';
-import { HolidayRequest} from '../types/types';
-//import { getEmployees, getHolidayRequests, updateHolidayRequest} from '../utils/dataManager';
 import { validateRequestDates, checkHolidayConflicts, isDuplicateRequest, getPublicHolidays} from '../utils/holidayManager';
-import { findEmploee, getNameById } from '../utils/utils';
 import { Types } from 'mongoose';
 import { dbWorker } from '../database_integration/DataBaseWorker';
-import { requestController } from '../controllers/request.controller';
-import { employeeController } from '../controllers/employee.controller';
 import { DatabaseType, dbConnector } from '../database_integration/db';
+import { updateRequestObject } from '../utils/holidayManager';
 
 const router = express.Router();
 
@@ -26,9 +22,14 @@ router.get('/', async(req: Request, res: Response) => {
         try {
         const publicHolidays = await getPublicHolidays(employeeId);
         const holidayRequests = await dbWorker.getHolidayRequestsByEmployeeId(employeeId);
-        console.log(holidayRequests);
-        if (holidayRequests.length == 0) {
-            return res.json({success: true, redirectUrl: `update-request?error=Employee with name ${(await dbWorker.getEmployeeById(employeeId))?.name}`})
+    
+        if (holidayRequests != null && holidayRequests.length == 0) {
+            return res.render('update-request', { 
+                error: 'No holiday requests found for this user. Please create a request first.',
+                publicHolidays: publicHolidays,
+                holidayRequests: holidayRequests,
+                employeeId: employeeId
+            });
         }
         res.render('update-request', {error: error, publicHolidays: publicHolidays, holidayRequests: holidayRequests, employeeId: employeeId});
         } catch (error) {
@@ -40,6 +41,7 @@ router.get('/', async(req: Request, res: Response) => {
 
 router.put('/', async(req: Request, res: Response) => {
     const { idForRequest, employeeId, startDate, endDate } = req.body;
+
     const requestID = idForRequest;
     
     
@@ -68,13 +70,9 @@ router.put('/', async(req: Request, res: Response) => {
         return res.json({success: true, redirectUrl: `/update-request?error=${encodeURIComponent(holidayConflict)}&employeeId=${employeeId}`});
     }
 
+    const updatedRequest = await updateRequestObject(employeeId, startDate, endDate);
+    
 
-    const updatedRequest = await dbWorker.updateRequest(requestID, {
-        start_date: startDate, end_date: endDate });
-    if (updatedRequest == null) {
-        console.log(`Something went wrong with updating request ${holidayRequest}`);
-        return ;
-    }
     if (await isDuplicateRequest(updatedRequest)) {
         return res.json({success: true, redirectUrl: `/update-request?error=Duplicate holiday request detected.&employeeId=${employeeId}`});
       } else {

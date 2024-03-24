@@ -1,9 +1,8 @@
 
 import { Employee, HolidayRequest} from '../types/types';
 import { getEmployees } from './dataManager';
-import { employeeController } from '../controllers/employee.controller';
 import { EmployeeInterface, RequestInterface } from '../database_integration/models';
-import { DBConnector, DatabaseType, dbConnector } from '../database_integration/db';
+import { DatabaseType, dbConnector } from '../database_integration/db';
 import { dbWorker } from '../database_integration/DataBaseWorker';
 import { Types } from 'mongoose';
 

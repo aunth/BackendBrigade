@@ -6,7 +6,6 @@ import { Employee, DepartmentSQL, HolidayRequest } from "../types/types";
 import { DBConnector, DatabaseType } from "./db";
 import { EmployeeInterface, BlackoutPeriodInterface, EmployeeModel, DepartmentInterface, RequestInterface } from "./models";
 import { Types } from "mongoose";
-import { getEmployees, getRequests } from "../utils/dataManager";
 import { holidayRulesByDepartment } from "../../data/dataStore";
 import { employeeController } from "../controllers/employee.controller"
 import { departmentController } from "../controllers/department.controller";
@@ -41,7 +40,6 @@ export class DBWorker {
                 return await employeeController.getEmployee(name);
             }
         } catch (error) {
-            console.error('Error retrieving employees by name:', error);
             throw error; // Re-throw for further handling
         }
     }
@@ -80,7 +78,8 @@ export class DBWorker {
                     (request: RequestInterface) => request.status == 'pending'
                 );
             } else {
-                throw new Error('Employee data retrieval by name currently only supported in MongoDB');
+                return (await requestController.getEmployeeRequests(id as number)).filter(
+                    (request: HolidayRequest) => request.status == 'pending')
             }
         } catch (error) {
             console.error(`Error retrieving holidays for employee with id: ${id}:`, error);
@@ -154,16 +153,16 @@ export class DBWorker {
         }
     }
 
-    async getRequestById(id: Types.ObjectId | string): Promise<RequestInterface | null> {
+    async getRequestById(id: Types.ObjectId | string): Promise<RequestInterface| HolidayRequest | null> {
         try {
             if (this.dbConnector.currentDatabaseType === DatabaseType.MongoDB) {
                 return await requestWorker.getRequestById(id as Types.ObjectId);
             } else {
-                throw new Error('Request retrieval currently only supported in MongoDB');
+                return await requestController.getRequest(id as string);
             }
         } catch (error) {
             console.error('Error retrieving request:', error);
-            throw error; // Re-throw for further handling
+            throw error;
         }
     }
 
@@ -176,16 +175,7 @@ export class DBWorker {
             }
         } catch (error) {
             console.error('Error retrieving request:', error);
-            throw error; // Re-throw for further handling
-        }
-    }
-
-    async getHolidayDetails(id: string): Promise<BlackoutPeriodInterface | null> {
-        if (this.dbConnector.currentDatabaseType === DatabaseType.MongoDB) {
-            // Implement logic for retrieving holiday details in PostgreSQL
-			return null;
-        } else {
-            throw new Error('Holiday data retrieval currently only supported in PostgreSQL');
+            throw error; 
         }
     }
 
@@ -198,7 +188,7 @@ export class DBWorker {
            }
        } catch (error) {
            console.error('Error reading departments:', error);
-           throw error; // Re-throw for further handling
+           throw error;
        }
     }
 
@@ -216,7 +206,7 @@ export class DBWorker {
         }
     }
 
-    async getBlackoutPeriodsForDepartment(departmentId:any) { ///////////////
+    async getBlackoutPeriodsForDepartment(departmentId:any) {
         try {
             if (this.dbConnector.currentDatabaseType === DatabaseType.MongoDB) {
                 return [];
@@ -229,11 +219,57 @@ export class DBWorker {
         }
     }
 
-    async getHolidayRequestsByEmployee(employeeId: Types.ObjectId | string | undefined) {
+    // async getEmployeesFromObject() {
+    //     const employees = getEmployees();
+    //     for (let employee of employees) {
+    //         const departmentId = await dbWorker.getDepartmentIdByName(employee.department);
+    //         const departmentObjectId = departmentId ? departmentId._id : new Types.ObjectId();
+
+    //         const emp = {
+    //             _id: new Types.ObjectId(),
+    //             name: employee.name,
+    //             department: departmentObjectId,
+    //             country: employee.country,
+    //             remaining_holidays: employee.remaining_holidays,
+    //         }
+            
+    //         await employeeWorker.insertEmployee(emp as EmployeeInterface);
+            
+    //         const requests = getRequests(employee.id);
+            
+    //         for (let request of requests) {
+            
+    //             await requestWorker.createRequest({
+    //                 _id: new Types.ObjectId(),
+    //                 employee_id: emp._id,
+    //                 start_date: request.start_date,
+    //                 end_date: request.end_date,
+    //                 status: request.status,
+    //             });
+    //         }
+    //     }
+    // }
+
+    //async getHolidayRequestsByEmployee(employeeId: Types.ObjectId | number | undefined) {
+    //    if (this.dbConnector.currentDatabaseType === DatabaseType.PostgreSQL) {
+    //        return await requestWorker.findRequestsByEmployeeId(employeeId as Types.ObjectId);
+    //    } else {
+    //        return await requestController.getEmployeeRequests(employeeId as number);
+    //      // throw new Error('Holiday data retrieval currently only supported in PostgreSQL');
+    //    }
+    //}
+
+    //async copyDataFromJson() {
+    //    await dbWorker.getDepartmentsFromObject();
+    //    //await dbWorker.getEmployeesFromObject();
+    //}
+
+    
+    async getHolidayRequestsByEmployee(employeeId: Types.ObjectId | number | undefined) {
         if (this.dbConnector.currentDatabaseType === DatabaseType.PostgreSQL) {
             return await requestWorker.findRequestsByEmployeeId(employeeId as Types.ObjectId);
         } else {
-            return await requestController.getEmployeeRequests(employeeId as string);
+            return await requestController.getEmployeeRequests(employeeId as number);
         }
     }
 
@@ -264,14 +300,10 @@ export class DBWorker {
            }
        } catch (error) {
            console.error('Error updating holiday:', error);
-           throw error; // Re-throw for further handling
+           throw error;
        }
     }
 
-    async copyDataFromJson() {
-        await dbWorker.getDepartmentsFromObject();
-        //await dbWorker.getEmployeesFromObject();
-    }
 }
 
 const dbConnectorInstance = DBConnector.getInstance(uri, AppDataSource);

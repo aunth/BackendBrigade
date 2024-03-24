@@ -1,10 +1,8 @@
 import mongoose from 'mongoose';
-//import { Client, QueryResult } from 'pg';
-//import { EmployeeModel } from './models';
-//import { Employee } from '../types/types';
-//import { Types } from 'mongoose';
 import { DataSource } from 'typeorm';
 import { AppDataSource } from '../database';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const dbName = 'HolidayApplication';
 
@@ -39,16 +37,24 @@ export class DBConnector {
             return;
         }
 
-        this.currentDatabaseType = databaseType;
+        await this.disconnectCurrentDatabase();
 
-        // Disconnect from all databases first to ensure a clean switch
-        //await mongoose.disconnect();
-        //await this.pgDataSource.destroy();
+        this.currentDatabaseType = databaseType;
 
         if (databaseType === DatabaseType.MongoDB) {
             await mongoose.connect(this.mongoDBUri);
         } else if (databaseType === DatabaseType.PostgreSQL) {
             await this.pgDataSource.initialize();
+        }
+    }
+
+    async disconnectCurrentDatabase() {
+        if (this.currentDatabaseType === DatabaseType.MongoDB) {
+            await mongoose.disconnect();
+            console.log('Disconnected from MongoDB');
+        } else if (this.currentDatabaseType === DatabaseType.PostgreSQL) {
+            await this.pgDataSource.destroy();
+            console.log('Disconnected from PostgreSQL');
         }
     }
 }

@@ -1,12 +1,7 @@
 import express, {Response, Request} from 'express';
-import { HolidayRequest} from '../types/types';
 import { validateRequestDates, checkHolidayConflicts, isDuplicateRequest, getPublicHolidays} from '../utils/holidayManager';
-import { findEmploee } from '../utils/utils';
-import { requestController } from '../controllers/request.controller';
-import { employeeController } from '../controllers/employee.controller';
 import { dbWorker } from '../database_integration/DataBaseWorker';
 import { Types } from 'mongoose';
-import { RequestInterface } from '../database_integration/models';
 import { createRequestObject } from '../utils/holidayManager';
 
 
@@ -39,13 +34,7 @@ router.post('/',  async(req: Request, res: Response) => {
     } catch {
         empId = new Types.ObjectId(String(employeeId));
     }
-
-
-    let holidayRequests = await dbWorker.getRequests();
-    
-
-    
-    console.log("employeeId", employeeId);
+  
     const employee = await dbWorker.getEmployeeById(employeeId);
     if (!employee){
         return res.redirect(`/add-request?error=Employee not found&employeeId=${employeeId}`);
@@ -62,9 +51,7 @@ router.post('/',  async(req: Request, res: Response) => {
     }
     
     try {
-        const newRequest = await createRequestObject(employeeId, startDate, endDate, holidayRequests);
-
-        console.log(`Created requests: ${newRequest}`);
+        const newRequest = await createRequestObject(employeeId, startDate, endDate);
         
         const isDuplicate = await isDuplicateRequest(newRequest);
 

@@ -1,7 +1,7 @@
 import { AppDataSource } from "../database";
 import { Request } from "../entity/Request";
 import { HolidayRequest } from "../types/types";
-//import { approveRequest } from '../utils/holidayManager';
+
 
 class RequestController {
     async getRequest(id: string) {
@@ -21,14 +21,13 @@ class RequestController {
         }
     }
 
-    async getEmployeeRequests(employeeId: string) {
+    async getEmployeeRequests(employeeId: number) {
         const requestRepository = AppDataSource.getRepository(Request);
         try {
-            const employeeRequests = await requestRepository.findBy({ id: parseInt(employeeId, 10) });
+            const employeeRequests = await requestRepository.findBy({ employee_id: employeeId });
             return employeeRequests;
         } catch (error) {
-            console.error(error);
-            return null;
+            throw error;
         }
     }
 
@@ -42,7 +41,7 @@ class RequestController {
         }
     }
 
-    async updateHolidayRequest(requestId: string, updatedRequest: Partial<Request>) {
+    async updateHolidayRequest(requestId: string, updatedRequest: Partial<HolidayRequest>) {
         const requestRepository = AppDataSource.getRepository(Request);
         try {
             let requestToUpdate = await requestRepository.findOneBy({ id: parseInt(requestId, 10) });
@@ -52,9 +51,8 @@ class RequestController {
             }
             requestRepository.merge(requestToUpdate, updatedRequest);
             return await requestRepository.save(requestToUpdate);
-            console.log(`Request ${requestId} updated successfully.`);
         } catch (error) {
-            console.error(`Error updating request with ID ${requestId}:`, error);
+            throw error;
         }
     }
 
@@ -71,7 +69,6 @@ class RequestController {
             await requestRepository.update(requestIdNumber, { status: action });
 
             if (action === 'approved') {
-                //await approveRequest(requestIdNumber as any); ////////////////// fix ////////////////////
                 console.log(`Request ${requestId} status updated to approved.`);
             } else {
                 console.log(`Request ${requestId} status updated to rejected.`);

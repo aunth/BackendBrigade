@@ -1,7 +1,4 @@
-import mongoose, { Document, Model } from 'mongoose';
-import { HolidayRequest } from '../types/types';
 import { Types } from 'mongoose';
-
 import { RequestInterface, RequestModel } from './models';
 
 export class RequestWorker {
@@ -50,7 +47,7 @@ export class RequestWorker {
       }
     } catch (error) {
       console.error('Error updating request:', error);
-      throw error; // Re-throw for further handling
+      throw error;
     }
   }
 
@@ -67,7 +64,7 @@ export class RequestWorker {
       }
     } catch (error) {
       console.error('Error deleting request:', error);
-      throw error; // Re-throw for further handling
+      throw error;
     }
   }
 
@@ -77,7 +74,7 @@ export class RequestWorker {
       return requests;
     } catch (error) {
       console.error('Error finding requests:', error);
-      throw error; // Re-throw for further handling
+      throw error;
     }
   }
 

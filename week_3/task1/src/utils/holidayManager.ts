@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { Employee, Holiday, HolidayRequest} from '../types/types';
 import { getCountryById } from './utils';
-import { holidayRulesByDepartment } from '../../data/dataStore';
 import { getDaysNum } from './utils';
 import * as fs from 'fs';
 import { Types } from 'mongoose';
@@ -10,13 +9,10 @@ import { dbWorker } from '../database_integration/DataBaseWorker';
 export const employeesFilename = './data/employees.json';
 export const holidaysFilename = './data/holidays.json';
 
-import { requestController } from '../controllers/request.controller';
+
 import { employeeController } from '../controllers/employee.controller';
-import { departmentController } from '../controllers/department.controller';
-import { blackoutPeriodsController } from '../controllers/blackoutperiods.controller';
 import { DBConnector, DatabaseType, dbConnector } from '../database_integration/db';
-import { Department } from '../entity/Department';
-import { DepartmentInterface, EmployeeInterface, RequestInterface } from '../database_integration/models';
+import { EmployeeInterface, RequestInterface } from '../database_integration/models';
 
 
 export async function getNextPublicHolidays(countryCode: string) {
@@ -45,7 +41,6 @@ export async function validateRequestDates(startDate: string, endDate: string, e
   }
 
   const dayDifference = (end.getTime() - start.getTime()) / (1000 * 3600 * 24) + 1;
-  console.log(dayDifference);
 
   const department = await dbWorker.getDepartment(employee);
 
@@ -65,31 +60,20 @@ export async function validateRequestDates(startDate: string, endDate: string, e
       }
     }
 
-    console.log('before get blackout periods');
-
   const blackoutPeriods = await dbWorker.getBlackoutPeriods(department?._id ? department._id : 0);
-  console.log('After get blackout periods');
+
   if (blackoutPeriods == undefined) {
     console.log(`Department with id: ${department._id}`)
   } else {
-    console.log('blackoutPeriods', blackoutPeriods);
     const hasBlackoutPeriod = blackoutPeriods.some(period => {
     const blackoutStart = new Date(period.start_date.toLocaleDateString('en-CA'));
     const blackoutEnd = new Date(period.end_date.toLocaleDateString('en-CA'));
 
-    console.log("start", start);
-    console.log("end", end);
-    console.log("blackoutStart", blackoutStart);
-    console.log("blackoutEnd", blackoutEnd);
-
-    console.log( (start <= blackoutEnd && start >= blackoutStart) || (end <= blackoutEnd && end >= blackoutStart) || (start <= blackoutEnd && end >= blackoutStart))
-
-   
     return (start <= blackoutEnd && start >= blackoutStart) || (end <= blackoutEnd && end >= blackoutStart) || (start <= blackoutEnd && end >= blackoutStart);
   });
 
   if (hasBlackoutPeriod) {
-    return `Request falls within a blackout period`; ///////////// check it (add info about blackout period) //////////
+    return `Request falls within a blackout period`;
   }
   return null;
   }
@@ -110,8 +94,6 @@ export async function checkHolidayConflicts(startDate: Date, endDate: Date, empl
         const holidayDate = new Date(holiday.date);
         return start <= holidayDate && holidayDate <= end;
       });
-
-      console.log(`HolidaysData: ${holidayConflict}`);
   
       if (holidayConflict.length > 0) {
         let dates = holidayConflict.map((holiday: Holiday) => holiday.date).join(', ');
@@ -153,27 +135,47 @@ export async function isDuplicateRequest(newRequest: HolidayRequest | RequestInt
 }
 
 
-export async function createRequestObject(employeeId: string | Types.ObjectId, startDate: Date, endDate: Date, holidayRequests: Array<any>): Promise<HolidayRequest | RequestInterface> {
+export async function createRequestObject(employeeId: string | Types.ObjectId, startDate: string, endDate: string): Promise<HolidayRequest | RequestInterface> {
   const start_date = new Date(startDate);
   const end_date = new Date(endDate);
   const status = "pending";
   
   if (!isNaN(Number(employeeId))) {
       return {
-          id: holidayRequests.length + 1,
           employee_id: Number(employeeId),
           start_date,
           end_date,
           status
       } as HolidayRequest;
   } else if (Types.ObjectId.isValid(employeeId)) {
-    console.log("Here i have crate new request")
       return {
           _id: new Types.ObjectId(), 
           employee_id: employeeId,
           start_date,
           end_date,
           status
+      } as RequestInterface;
+  } else {
+      throw new Error('Invalid employeeId format');
+  }
+}
+
+
+export async function updateRequestObject(employeeId: string | Types.ObjectId, startDate: string, endDate: string): Promise<HolidayRequest | RequestInterface> {
+  const start_date = new Date(startDate);
+  const end_date = new Date(endDate);
+  
+  if (!isNaN(Number(employeeId))) {
+      return { 
+        employee_id: Number(employeeId),
+        start_date,
+        end_date,
+      } as HolidayRequest;
+  } else if (Types.ObjectId.isValid(employeeId)) {
+      return {
+        employee_id: new Types.ObjectId(employeeId),
+        start_date,
+        end_date,
       } as RequestInterface;
   } else {
       throw new Error('Invalid employeeId format');
@@ -213,7 +215,6 @@ export async function approveRequest(requestId: Types.ObjectId |string) {
   }
 
   const takenDays = getDaysNum(holidayRequest);
-  console.log("takenDays", takenDays);
 
   if (takenDays >= 0) {
       await dbWorker.updateRequest(requestId as Types.ObjectId, {status: 'approved'});

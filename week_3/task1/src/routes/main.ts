@@ -1,20 +1,12 @@
 
 import express, {Response, Request} from 'express';
-import { getNameById } from '../utils/utils'
-import { employeeWorker } from '../database_integration/EmployeeWorker';
-import { DatabaseType } from '../database_integration/db';
 import { dbWorker } from '../database_integration/DataBaseWorker';
-import { getEmployees } from '../utils/dataManager';
-import { EmployeeInterface } from '../database_integration/models';
-import { Employee } from '../types/types';
 import { getEmployeeId } from '../utils/utils';
-import { dbConnector } from '../database_integration/db';
 
 
 const router = express.Router();
 
 router.get('/', async (req: Request, res: Response) => {
-  await dbConnector.switchDatabase(DatabaseType.MongoDB);
   res.render('main');
 });
 
@@ -23,7 +15,6 @@ router.post('/request-action', async (req, res) => {
 
   try {
     const employee = await dbWorker.getEmployeeByName(employeeName);
-    console.log(employee);
     if (!employee) {
       res.status(404).send(`Employee with name ${employeeName} does not exist.`);
       return;

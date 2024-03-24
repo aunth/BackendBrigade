@@ -1,7 +1,6 @@
 
-import mongoose, { FilterQuery } from 'mongoose';
+import { FilterQuery } from 'mongoose';
 import { BlackoutPeriodModel, BlackoutPeriodInterface } from './models';
-import { DepartmentValues, HolidayRequest, HolidayRule } from './../types/types';
 import { Types } from 'mongoose';
 
 class BlackoutPeriodWorker {
@@ -45,7 +44,7 @@ class BlackoutPeriodWorker {
 		return holidays;
 	} catch (error) {
 		console.error('Error finding holidays:', error);
-		return []; // Handle or throw error as needed
+		return [];
 	}
   }
 }

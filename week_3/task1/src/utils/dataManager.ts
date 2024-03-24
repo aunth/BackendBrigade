@@ -1,8 +1,5 @@
 import { Employee, HolidayRequest } from '../types/types';
-import { increaseUserHolidays, getDaysNum } from './utils';
-import { saveHolidayRequests } from './holidayManager';
 import * as fs from 'fs';
-import { dbWorker } from '../database_integration/DataBaseWorker';
 
 export const employeesFilename = './data/employees.json';
 export const holidaysFilename = './data/holidays.json';
