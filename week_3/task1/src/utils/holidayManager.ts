@@ -96,7 +96,7 @@ export async function validateRequestDates(startDate: string, endDate: string, e
 }}
 
 
-export async function getPublicHolidays(employeeId: Types.ObjectId | number) {
+export async function getPublicHolidays(employeeId: any) {
     const empId = Number(employeeId);
     const countryCode = await getCountryById(empId);
     return await getNextPublicHolidays(countryCode);

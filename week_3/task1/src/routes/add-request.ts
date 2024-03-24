@@ -9,6 +9,7 @@ import { findEmploee } from '../utils/utils';
 import { requestController } from '../controllers/request.controller';
 import { employeeController } from '../controllers/employee.controller';
 import { dbWorker } from '../database_integration/DataBaseWorker';
+import { Types } from 'mongoose';
 
 
 const router = express.Router();
@@ -16,16 +17,13 @@ const router = express.Router();
 
 router.get('/', async(req: Request, res: Response) => {
     const error = req.query.error;
-    const employeeName = req.query.name as string;
-    const employee = (await dbWorker.getEmployeeByName(employeeName));
-    if (employee == null) {
-        console.log(`There is no employee with name ${name}`);
-        res.render(`add-request?error=There is no employee with name ${name}`);
-    } else {
-        const employeeId = employee.id;
-        const publicHolidays = await getPublicHolidays(employeeId);
-        res.render('add-request', {error: error, publicHolidays: publicHolidays, employeeId: employeeId});
-    }
+    const employeeId = req.query.employeeId;
+    if (employeeId == undefined) {
+        console.log('EmployeeId didn\'t passed as a parametre');
+        return res.render('/');
+    } 
+    const publicHolidays = await getPublicHolidays(employeeId);
+    res.render('add-request', {error: error, publicHolidays: publicHolidays, employeeId: employeeId});
 });
 
 router.post('/',  async(req: Request, res: Response) => {

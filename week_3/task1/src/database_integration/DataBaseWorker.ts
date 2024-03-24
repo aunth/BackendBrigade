@@ -88,7 +88,7 @@ export class DBWorker {
 
     }
 
-    async getHolidayRequestsByEmployeeId(id: Types.ObjectId | number) {
+    async getHolidayRequestsByEmployeeId(id: any) {
         try {
             if (this.dbConnector.currentDatabaseType === DatabaseType.MongoDB) {
                 return (await requestWorker.findRequestsByEmployeeId(id as Types.ObjectId)).filter(
@@ -197,7 +197,7 @@ export class DBWorker {
     async getDepartment(employee: EmployeeInterface | Employee): Promise<Partial<DepartmentInterface> | null> {
         try {
             if (this.dbConnector.currentDatabaseType === DatabaseType.MongoDB) {
-                return await departmentWorker.getDepartment(employee.department as Types.ObjectId);
+                return await departmentWorker.getDepartment((employee as EmployeeInterface).department);
             } else {
                 return {} as DepartmentInterface;
                 throw new Error('Request retrieval currently only supported in MongoDB');
@@ -266,12 +266,23 @@ export class DBWorker {
         }
     }
 
-    // async getEmployeesFromObject() {
-    //    const employees: Employee[] = getEmployees();
-    //    for (let employee of employees) {
-    //        await employeeWorker.insertOne(employee);
-    //    }
-	// }
+    async getEmployeesFromObject() {
+        const employees: Employee[] = getEmployees();
+        for (let employee of employees) {
+            const departmentId = await dbWorker.getDepartmentIdByName(employee.name);
+            // Check if departmentId is null, if so, assign an empty ObjectId
+            const departmentObjectId = departmentId ? departmentId._id : new Types.ObjectId();
+    
+            await employeeWorker.insertOne({
+                _id: new Types.ObjectId(),
+                name: employee.name,
+                department: departmentObjectId,
+                country: employee.country,
+                remaining_holidays: employee.remaining_holidays,
+            } as EmployeeInterface);
+        }
+    }
+    
 
     async getDepartmentsFromObject() {
        departmentWorker.insertFromObject(holidayRulesByDepartment);

@@ -7,11 +7,12 @@ import { dbWorker } from '../database_integration/DataBaseWorker';
 import { getEmployees } from '../utils/dataManager';
 import { EmployeeInterface } from '../database_integration/models';
 import { Employee } from '../types/types';
+import { getEmployeeId } from '../utils/utils';
 
 
 const router = express.Router();
 
-router.get('/', (req: Request, res: Response) => {
+router.get('/', async (req: Request, res: Response) => {
   res.render('main');
 });
 
@@ -22,21 +23,23 @@ router.post('/request-action', async (req, res) => {
     const employee = await dbWorker.getEmployeeByName(employeeName);
     console.log(employee);
     if (!employee) {
-        res.status(404).send(`Employee with name ${employeeName} does not exist.`);
-        return;
-    }
-    switch (action) {
+      res.status(404).send(`Employee with name ${employeeName} does not exist.`);
+      return;
+    } else {
+      const employee_id = await getEmployeeId(employee);
+      switch (action) {
         case 'create':
-            res.redirect(`/add-request?employeeId=${encodeURIComponent(employeeName)}`);
+            res.redirect(`/add-request?employeeId=${encodeURIComponent(employee_id)}`);
             return;
         case 'update':
-            res.redirect(`/update-request?employeeId=${encodeURIComponent(employeeName)}`);
+            res.redirect(`/update-request?employeeId=${encodeURIComponent(employee_id)}`);
             return;
         case 'delete':
-            return res.redirect(`/delete?employeeId=${encodeURIComponent(employeeName)}`);
+            return res.redirect(`/delete?employeeId=${encodeURIComponent(employee_id)}`);
         default:
             res.status(400).send('Unknown action');
             return;
+      }
     }
   } catch (error) {
     console.error('Error processing request:', error);
