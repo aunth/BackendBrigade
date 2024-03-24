@@ -1,27 +1,34 @@
+
 export interface Employee {
     id: number;
     name: string;
-    department: Department;
+    department_id: number;
     country: string;
-    remainingHolidays: number;
+    remaining_holidays: number;
   }
 
-export enum Department {
+export enum DepartmentValues {
     IT = 'IT',
     HR = 'HR',
     FINANCE = 'Finance',
     MARKETING = 'Marketing',
     SALES = 'Sales',
   }
-  
-  export interface HolidayRequest {
-    idForRequest: number;
-    employeeId: number;
-    startDate: Date;
-    endDate: Date;
-    status: 'pending' | 'approved' | 'rejected';
+
+  export interface DepartmentSQL {
+    id: number,
+    name: string,
+    max_consecutive_days: number,
   }
   
+  export interface HolidayRequest {
+    id: number;
+    employee_id: number;
+    start_date: Date;
+    end_date: Date;
+    status: 'pending' | 'approved' | 'rejected';
+  }
+
   export interface HolidayRule {
     maxConsecutiveDays: number;
     blackoutPeriods: { start: Date; end: Date }[];

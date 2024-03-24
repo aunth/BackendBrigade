@@ -12,28 +12,33 @@
     <ul>
         <% holidayRequests.filter(request => request.status === 'pending').forEach(request => { %>
             <li>
-                <strong>Request ID:</strong> <%= request.idForRequest %>, 
-                <strong>Employee ID:</strong> <%= request.employeeId %> (<%= getNameById(request.employeeId) %>), 
-                <strong>Start Date:</strong> <%= request.startDate.toLocaleDateString('en-CA') %>,
-                <strong>End Date:</strong> <%= request.endDate.toLocaleDateString('en-CA') %>
-                <button onclick="approveRequest('<%= request.idForRequest %>')">Approve</button>
-                <button onclick="rejectRequest('<%= request.idForRequest %>')">Reject</button>
+                <strong>Name:</strong> <%= employees.find(employee => employee.id == request.employee_id).name %>,
+                <strong>Start Date:</strong> <%= request.start_date.toLocaleDateString('en-CA') %>,
+                <strong>End Date:</strong> <%= request.end_date.toLocaleDateString('en-CA') %>
+                <button onclick="approveRequest('<%= request.id %>')">Approve</button>
+                <button onclick="rejectRequest('<%= request.id %>')">Reject</button>
             </li>
             </li>
         <% }); %>
     </ul>
 </body>
 <script>
+    function updateRequestAction(requestId, action) {
+        fetch(`/requests/${action}/${requestId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: action })
+        })
+        .then(response => location.reload())
+        .catch(error => console.error('Error:', error));
+    }
+
     function approveRequest(requestId) {
-        fetch(`/requests/approve/${requestId}`, { method: 'POST' })
-            .then(response => location.reload())
-            .catch(error => console.error('Error:', error));
+        updateRequestAction(requestId, 'approved');
     }
-    
+
     function rejectRequest(requestId) {
-        fetch(`requests/reject/${requestId}`, { method: 'POST' })
-            .then(response => location.reload())
-            .catch(error => console.error('Error:', error));
+        updateRequestAction(requestId, 'rejected');
     }
-    </script>
+</script>
 </html>
