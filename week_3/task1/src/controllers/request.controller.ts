@@ -1,7 +1,7 @@
 import { AppDataSource } from "../database";
 import { Request } from "../entity/Request";
 import { HolidayRequest } from "../types/types";
-import { approveRequest } from '../utils/holidayManager';
+//import { approveRequest } from '../utils/holidayManager';
 
 class RequestController {
     async getRequest(id: string) {
@@ -15,6 +15,17 @@ class RequestController {
         try {
             const holidayRequests = await requestRepository.find()
             return holidayRequests;
+        } catch (error) {
+            console.error(error);
+            return [];
+        }
+    }
+
+    async getEmployeeRequests(employeeId: string) {
+        const requestRepository = AppDataSource.getRepository(Request);
+        try {
+            const employeeRequests = await requestRepository.findBy({ id: parseInt(employeeId, 10) });
+            return employeeRequests;
         } catch (error) {
             console.error(error);
             return [];
@@ -60,7 +71,7 @@ class RequestController {
             await requestRepository.update(requestIdNumber, { status: action });
 
             if (action === 'approved') {
-                await approveRequest(requestIdNumber as any); ////////////////// fix ////////////////////
+                //await approveRequest(requestIdNumber as any); ////////////////// fix ////////////////////
                 console.log(`Request ${requestId} status updated to approved.`);
             } else {
                 console.log(`Request ${requestId} status updated to rejected.`);
@@ -71,10 +82,10 @@ class RequestController {
     }
     
 
-    async deleteRequest(requestId: number) {
+    async deleteRequest(requestId: string) {
         const requestRepository = AppDataSource.getRepository(Request);
         try {
-            const deleteResult = await requestRepository.delete(requestId);
+            const deleteResult = await requestRepository.delete(parseInt(requestId, 10));
             if (deleteResult.affected === 0) {
                 console.error(`Request with ID ${requestId} not found.`);
             } else {
