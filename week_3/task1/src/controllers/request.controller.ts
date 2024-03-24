@@ -82,10 +82,10 @@ class RequestController {
     }
     
 
-    async deleteRequest(requestId: string) {
+    async deleteRequest(requestId: number) {
         const requestRepository = AppDataSource.getRepository(Request);
         try {
-            const deleteResult = await requestRepository.delete(parseInt(requestId, 10));
+            const deleteResult = await requestRepository.delete(requestId);
             if (deleteResult.affected === 0) {
                 console.error(`Request with ID ${requestId} not found.`);
             } else {

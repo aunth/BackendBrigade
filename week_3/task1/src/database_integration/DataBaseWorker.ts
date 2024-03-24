@@ -197,7 +197,7 @@ export class DBWorker {
     async getDepartment(employee: EmployeeInterface | Employee): Promise<Partial<DepartmentInterface> | null> {
         try {
             if (this.dbConnector.currentDatabaseType === DatabaseType.MongoDB) {
-                return await departmentWorker.getDepartment(employee.department as Types.ObjectId);
+                return await departmentWorker.getDepartment((employee as EmployeeInterface).department);
             } else {
                 return {} as DepartmentInterface;
                 throw new Error('Request retrieval currently only supported in MongoDB');
