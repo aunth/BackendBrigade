@@ -37,7 +37,7 @@ export async function getEmployeeId(employee: EmployeeInterface | Employee) {
 }
 
 export async function getNameById(id: number | Types.ObjectId): Promise<string | undefined> {
-  const employee = (await dbWorker.getEmployeeById(id));
+  const employee = await dbWorker.getEmployeeById(id);
   
   if (!employee) {
       return undefined;

@@ -10,8 +10,8 @@ CREATE TABLE Departments (
 CREATE TABLE BlackoutPeriods (
     id SERIAL PRIMARY KEY,
     department_id INT REFERENCES Departments(id),
-    blackout_start_date TIMESTAMP NOT NULL,
-    blackout_end_date TIMESTAMP NOT NULL
+    start_date TIMESTAMP NOT NULL,
+    end_date TIMESTAMP NOT NULL
 );
 
 -- Create Employees table

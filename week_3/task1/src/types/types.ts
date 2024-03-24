@@ -30,11 +30,11 @@ export enum DepartmentValues {
     status: 'pending' | 'approved' | 'rejected';
   }
 
-  export interface DepartmentSQL {
-    id: number,
-    name: string,
-    max_consecutive_days: number,
-  }
+ //export interface DepartmentSQL {
+ //  id: number,
+ //  name: string,
+ //  max_consecutive_days: number,
+ //}
 
   //export interface HolidayRequestForSQL {
   //  id: number;

@@ -10,6 +10,8 @@ import { requestController } from '../controllers/request.controller';
 import { employeeController } from '../controllers/employee.controller';
 import { dbWorker } from '../database_integration/DataBaseWorker';
 import { Types } from 'mongoose';
+import { RequestInterface } from '../database_integration/models';
+import { createRequestObject } from '../utils/holidayManager';
 
 
 const router = express.Router();
@@ -27,59 +29,86 @@ router.get('/', async(req: Request, res: Response) => {
 });
 
 router.post('/',  async(req: Request, res: Response) => {
-
-    const {employeeId, startDate, endDate} = req.body;
-   
+    
+    let {employeeId, startDate, endDate} = req.body;
     
     if (!employeeId || !startDate || !endDate) {
         return res.redirect(`add-request?error=Invalid input&employeeId=${employeeId}`);
     }
 
+    console.log(1);
+
+    let empId
+    try {
+        empId = parseInt(employeeId, 10);
+    } catch {
+        empId = new Types.ObjectId(String(employeeId));
+    }
+
+    console.log(2);
+
     //let employees = await employeeController.getEmployees();
-    let holidayRequests = await requestController.getAllRequests();
+    let holidayRequests = await dbWorker.getRequests();
     
     //dbWorker.getHolidayDetails
+    console.log(3);
 
+    
+    console.log("employeeId", employeeId);
     const employee = await dbWorker.getEmployeeById(employeeId);
     if (!employee){
         return res.redirect(`/add-request?error=Employee not found&employeeId=${employeeId}`);
     }
 
+    console.log(4);
+    const validationError = await validateRequestDates(startDate, endDate, employee);
+    if (validationError) {
+        return res.redirect(`/add-request?error=${encodeURIComponent(validationError)}&employeeId=${employeeId}`);
+    }
 
-    //const validationError = await validateRequestDates(startDate, endDate, employee, employeeId);
-    //if (validationError) {
-    //    return res.redirect(`/add-request?error=${encodeURIComponent(validationError)}&employeeId=${employeeId}`);
+    console.log(5)
+
+    // Check for conflicts with public holidays
+
+    const holidayConflict = await checkHolidayConflicts(startDate, endDate, employeeId);
+    if (holidayConflict) {
+        return res.redirect(`/add-request?error=${encodeURIComponent(holidayConflict)}&employeeId=${employeeId}`);
+    }
+
+    console.log(6)
+    
+    //const newRequest: HolidayRequest | RequestInterface = {
+    //   id: holidayRequests.length + 1,
+    //   employee_id: Number(employeeId),
+    //   start_date: new Date(startDate),
+    //   end_date: new Date(endDate),
+    //   status: "pending"
     //}
-//
-    //// Check for conflicts with public holidays
-//
-    //const holidayConflict = await checkHolidayConflicts(startDate, endDate, employeeId);
-    //if (holidayConflict) {
-    //    return res.redirect(`/add-request?error=${encodeURIComponent(holidayConflict)}&employeeId=${employeeId}`);
-    //}
+    
+    try {
+        const newRequest = await createRequestObject(employeeId, startDate, endDate, holidayRequests);
+        console.log(7)
+        
+        const isDuplicate = await isDuplicateRequest(newRequest);
 
+        console.log(8)
 
-    //const newRequest: HolidayRequest = {
-    //    id: holidayRequests.length + 1,
-    //    employee_id: Number(employeeId),
-    //    start_date: new Date(startDate),
-    //    end_date: new Date(endDate),
-    //    status: "pending"
-    //};
+        if (isDuplicate) {
+            return res.redirect(`/add-request?error=Duplicate holiday request detected.&employeeId=${employeeId}`);
+          } else {
+            console.log(9)
+            await dbWorker.createRequest(newRequest)  /////////////////////////
+          }
 
-    //const isDuplicate = await isDuplicateRequest(newRequest);
-//
-    //if (isDuplicate) {
-    //    return res.redirect(`/add-request?error=Duplicate holiday request detected.&employeeId=${employeeId}`);
-    //  } else {
-    //    await requestController.createRequest(newRequest)  /////////////////////////
-    //  }
-//
-    //console.log(`User with ${newRequest.employee_id} id create new Holiday Request ` + 
-    //            `from ${newRequest.start_date.toLocaleDateString('en-CA')} ` + 
-    //            `to ${newRequest.end_date.toLocaleDateString('en-CA')}`)
+        console.log(`User with ${newRequest.employee_id} id create new Holiday Request ` + 
+                    `from ${newRequest.start_date.toLocaleDateString('en-CA')} ` + 
+                    `to ${newRequest.end_date.toLocaleDateString('en-CA')}`)
 
-    res.redirect('/requests');
+        res.redirect('/requests');
+    } catch (error) {
+        console.error(error);
+        return res.redirect(`/add-request?error=Some error in add-request &employeeId=${employeeId}`);
+    }
 
 });
 

@@ -10,10 +10,10 @@ export class BlackoutPeriod extends BaseEntity{
   department_id: number;
 
   @Column('timestamp')
-  blackout_start_date: Date;
+  start_date: Date;
 
   @Column('timestamp')
-  blackout_end_date: Date;
+  end_date: Date;
 
   @ManyToOne(() => Department, department => department.blackoutPeriods)
   department: Department;

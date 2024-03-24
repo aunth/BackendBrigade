@@ -11,7 +11,9 @@ const router = express.Router();
 
 router.get('/', async(req: Request, res: Response) => {
     const employees =  await dbWorker.getEmployees();
-    const holidayRequests: RequestInterface[] = await dbWorker.getRequests();
+    console.log("employees", employees);
+    const holidayRequests = await dbWorker.getRequests();
+    console.log("holidayRequests", holidayRequests)
     res.render('employees', {employees, holidayRequests});
 });
 

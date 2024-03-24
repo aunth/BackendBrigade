@@ -21,10 +21,10 @@ class RequestController {
         }
     }
 
-    async getEmployeeRequests(employeeId: number) {
+    async getEmployeeRequests(employeeId: string) {
         const requestRepository = AppDataSource.getRepository(Request);
         try {
-            const employeeRequests = await requestRepository.findBy({ id: employeeId });
+            const employeeRequests = await requestRepository.findBy({ id: parseInt(employeeId, 10) });
             return employeeRequests;
         } catch (error) {
             console.error(error);
@@ -48,10 +48,10 @@ class RequestController {
             let requestToUpdate = await requestRepository.findOneBy({ id: parseInt(requestId, 10) });
             if (!requestToUpdate) {
                 console.error(`Request with ID ${requestId} not found.`);
-                return;
+                return null;
             }
             requestRepository.merge(requestToUpdate, updatedRequest);
-            await requestRepository.save(requestToUpdate);
+            return await requestRepository.save(requestToUpdate);
             console.log(`Request ${requestId} updated successfully.`);
         } catch (error) {
             console.error(`Error updating request with ID ${requestId}:`, error);
