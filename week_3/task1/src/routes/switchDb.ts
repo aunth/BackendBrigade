@@ -15,9 +15,8 @@ const router = express.Router();
 
 const dbConnector = DBConnector.getInstance(uri, AppDataSource);
 
-// Assuming the use of express.Router() or directly with app.post
 router.get('/:dbType', async (req, res) => {
-    const dbType = req.params.dbType; // Now expecting dbType to be in the request body
+    const dbType = req.params.dbType;
     console.log(dbType);
     if (!Object.values(DatabaseType).includes(dbType as DatabaseType)) {
         return res.status(400).send('Invalid database type');
@@ -25,7 +24,6 @@ router.get('/:dbType', async (req, res) => {
 
     try {
         await dbConnector.switchDatabase(dbType as DatabaseType);
-        //res.send(`Switched to ${dbType}`);
         console.log(`Switched to ${dbType}`)
         res.redirect('/');
     } catch (error) {

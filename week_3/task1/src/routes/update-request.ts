@@ -2,8 +2,8 @@ import express, {Response, Request} from 'express';
 import { HolidayRequest} from '../types/types';
 //import { getEmployees, getHolidayRequests, updateHolidayRequest} from '../utils/dataManager';
 import { validateRequestDates, checkHolidayConflicts, isDuplicateRequest, getPublicHolidays} from '../utils/holidayManager';
-import { findEmploee } from '../utils/utils';
-
+import { findEmploee, getNameById } from '../utils/utils';
+import { Types } from 'mongoose';
 import { dbWorker } from '../database_integration/DataBaseWorker';
 import { requestController } from '../controllers/request.controller';
 import { employeeController } from '../controllers/employee.controller';
@@ -13,14 +13,18 @@ const router = express.Router();
 
 router.get('/', async(req: Request, res: Response) => {
     const error = req.query.error;
-    const employeeName = req.query.employeeName as string;
-    const employeeId = await dbWorker.getEmployeeIdByName(employeeName);
+    const employeeId = req.query.employeeId as string;
     if (employeeId == undefined) {
-        console.log(`Cannot find id for employee with name ${employeeName}`);
+        console.log(`Cannot find id for employee`);
     } else {
+        try {
         const publicHolidays = await getPublicHolidays(employeeId);
         const holidayRequests = await dbWorker.getHolidayRequestsByEmployeeId(employeeId);
         res.render('update-request', {error: error, publicHolidays: publicHolidays, holidayRequests: holidayRequests, employeeId: employeeId});
+        } catch (error) {
+            console.log(`Error with getUpdating of the Request: ${error}`);
+        }
+        
     }
 });
 

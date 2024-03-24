@@ -3,7 +3,7 @@ import { Employee, HolidayRequest} from '../types/types';
 import { getEmployees } from './dataManager';
 import { employeeController } from '../controllers/employee.controller';
 import { EmployeeInterface, RequestInterface } from '../database_integration/models';
-import { DBConnector, DatabaseType } from '../database_integration/db';
+import { DBConnector, DatabaseType, dbConnector } from '../database_integration/db';
 import { dbWorker } from '../database_integration/DataBaseWorker';
 import { Types } from 'mongoose';
 
@@ -28,7 +28,15 @@ export function getDaysNum(request: HolidayRequest | RequestInterface) {
   return (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24) + 1
 }
 
-export async function getNameById(id: number): Promise<string | undefined> {
+export async function getEmployeeId(employee: EmployeeInterface | Employee) {
+  if (dbConnector.currentDatabaseType == DatabaseType.MongoDB) {
+    return (employee as EmployeeInterface)._id;
+  } else {
+    return employee.id;
+  }
+}
+
+export async function getNameById(id: number | Types.ObjectId): Promise<string | undefined> {
   const employee = (await dbWorker.getEmployeeById(id));
   
   if (!employee) {

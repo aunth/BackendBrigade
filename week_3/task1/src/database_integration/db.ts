@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 //import { Employee } from '../types/types';
 //import { Types } from 'mongoose';
 import { DataSource } from 'typeorm';
+import { AppDataSource } from '../database';
 
 const dbName = 'HolidayApplication';
 
@@ -46,12 +47,10 @@ export class DBConnector {
 
         if (databaseType === DatabaseType.MongoDB) {
             await mongoose.connect(this.mongoDBUri);
-            console.log('Switched to MongoDB');
         } else if (databaseType === DatabaseType.PostgreSQL) {
             await this.pgDataSource.initialize();
-            console.log('Switched to PostgreSQL');
         }
     }
 }
 
-//export const Connector = new DBConnector(DatabaseType.MongoDB, uri, '');
+export const dbConnector = DBConnector.getInstance(uri, AppDataSource);
