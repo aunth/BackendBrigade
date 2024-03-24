@@ -125,21 +125,31 @@ export async function checkHolidayConflicts(startDate: Date, endDate: Date, empl
 }
 
 export async function isDuplicateRequest(newRequest: HolidayRequest | RequestInterface): Promise<boolean> {
-    const holidayRequests = await dbWorker.getRequests();
-    const duplicate = holidayRequests.some(request => {
+  console.log("New request + ", newRequest);
+  const holidayRequests = await dbWorker.getRequests();
+  console.log('All requests: ' + holidayRequests);
+  const duplicate = holidayRequests.some(request => {
+    console.log(`${newRequest.employee_id} vs ${request.employee_id} == ${newRequest.employee_id === request.employee_id}`);
       if (newRequest.employee_id == request.employee_id) {
-  
-        const existingStartDate = new Date(request.start_date.toLocaleDateString('en-CA'));
-        const existingEndDate = new Date(request.end_date.toLocaleDateString('en-CA'));
-        const newStartDate = new Date(newRequest.start_date);
-        const newEndDate = new Date(newRequest.end_date);
-  
-        const isExactMatch = existingStartDate.getTime() === newStartDate.getTime() && existingEndDate.getTime() === newEndDate.getTime();
-        return isExactMatch;
+          const existingStartDate = new Date(request.start_date);
+          const existingEndDate = new Date(request.end_date);
+          const newStartDate = new Date(newRequest.start_date);
+          const newEndDate = new Date(newRequest.end_date);
+
+          console.log("Existing Start Date:", existingStartDate);
+          console.log("Existing End Date:", existingEndDate);
+          console.log("New Start Date:", newStartDate);
+          console.log("New End Date:", newEndDate);
+
+          const isExactMatch = existingStartDate.getTime() == newStartDate.getTime() &&
+                              existingEndDate.getTime() == newEndDate.getTime();
+
+          return isExactMatch;
       }
       return false;
-    });
-    return duplicate;
+  });
+
+  return duplicate;
 }
 
 
@@ -160,7 +170,7 @@ export async function createRequestObject(employeeId: string | Types.ObjectId, s
     console.log("Here i have crate new request")
       return {
           _id: new Types.ObjectId(), 
-          employee_id: new Types.ObjectId(employeeId),
+          employee_id: employeeId,
           start_date,
           end_date,
           status

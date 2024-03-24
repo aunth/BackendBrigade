@@ -10,10 +10,10 @@
 <body>
     <h1>List of Pending Holiday Requests</h1>
     <ul>
-        <% holidayRequests.filter(request => request.status === 'pending').forEach(request => { %>
+        <% holidayRequests.filter(request => request.status === 'pending').forEach((request, index) => { %>
             <li>
-                <strong>Request ID:</strong> <%= request.id %>, 
-                <strong>Employee ID:</strong> <%= request.employee_id %> (<%= employeeName %>), 
+                <strong>Request <%= index + 1 %>:</strong>,
+                <strong>Name:</strong> <%= employeeName %>, 
                 <strong>Start Date:</strong> <%= request.start_date.toLocaleDateString('en-CA') %>,
                 <strong>End Date:</strong> <%= request.end_date.toLocaleDateString('en-CA') %>
 				<form id="deleteForm" action="/delete/<%= request.id %>" method="POST">
