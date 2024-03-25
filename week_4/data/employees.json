@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "name": "John Doe",
+    "department": "IT",
+    "country": "UA",
+    "remaining_holidays": 15
+  },
+  {
+    "id": 2,
+    "name": "Jane Smith",
+    "department": "HR",
+    "country": "IT",
+    "remaining_holidays": 24
+  },
+  {
+    "id": 3,
+    "name": "John Smith",
+    "department": "HR",
+    "country": "UA",
+    "remaining_holidays": 15
+  }
+]
