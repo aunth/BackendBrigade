@@ -1,13 +1,13 @@
 
 import express, { Request, Response } from 'express';
-import { dbWorker } from '../database_integration/DataBaseWorker';
+import { dbHandler } from '../database_integration/DataBaseWorker';
 
 
 const router = express.Router();
 
 router.get('/', async(req: Request, res: Response) => {
-    const employees =  await dbWorker.getEmployees();
-    const holidayRequests = await dbWorker.getRequests();
+    const employees =  await dbHandler.getEmployees();
+    const holidayRequests = await dbHandler.getRequests();
     res.render('employees', {employees, holidayRequests});
 });
 

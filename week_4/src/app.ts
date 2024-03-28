@@ -1,5 +1,6 @@
-import "reflect-metadata"
 import express from 'express';
+import session from 'express-session';
+import passport from 'passport';
 import path from 'path';
 import dotenv from 'dotenv';
 import mainRouter from './routes/main';
@@ -11,24 +12,28 @@ import deleteRouter from './routes/deleteRequest';
 import switchDb from './routes/switchDb';
 import { dbConnector } from "./database_integration/db";
 import { DatabaseType } from "./database_integration/db";
+import registerRouter from './routes/registration';
+import googleAuthRouter from './routes/google-auth';
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-
-// Middlewares
 app.use(express.urlencoded({ extended: true }));
-app.use(express.json()); // For parsing application/json
+app.use(express.json());
+app.use(session({
+    secret: 'your-secret-key',
+    resave: false,
+    saveUninitialized: false
+}));
+app.use(passport.initialize());
+app.use(passport.session());
 
-// Static files
 app.use(express.static(path.join(__dirname, '../public')))
 
-// EJS Setup
 app.set('view engine', 'ejs')
 
-// Logging Middleware
 app.use((req, res, next) => {
   console.log(`Received ${req.method} request for '${req.url}'`);
   next();
@@ -36,6 +41,8 @@ app.use((req, res, next) => {
 
 // Routes
 app.use('/', mainRouter);
+app.use('/registration', registerRouter);
+app.use('/auth/google', googleAuthRouter);
 app.use('/switch-db', switchDb);
 app.use('/delete', deleteRouter);
 app.use('/employees', employeesRouter);
@@ -43,9 +50,9 @@ app.use('/requests', holidaysRouter);
 app.use('/add-request', addRequestsRouter);
 app.use('/update-request', updateRequestRouter)
 
-// Starting the server
-app.listen(port, () => {
-  // Initialize the connect with MongoDB
-  dbConnector.switchDatabase(DatabaseType.MongoDB);
+// Start the server
+app.listen(port, async () => {
+  // Initialize the connection with MongoDB
+  await dbConnector.switchDatabase(DatabaseType.MongoDB);
   console.log(`Server running at http://localhost:${port}`);
 });

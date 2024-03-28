@@ -13,6 +13,7 @@ class EmployeesWorker {
     	    // Save the new document to the database
     	    const savedEmployee = await newEmployee.save();
 
+			console.log(`Employee with name ${employeeData.name} was registered`);
     	    // Return the saved document
     	    return savedEmployee;
     	} catch (error) {

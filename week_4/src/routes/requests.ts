@@ -1,6 +1,6 @@
 
 import express, {Response, Request} from 'express';
-import { dbWorker } from '../database_integration/DataBaseWorker';
+import { dbHandler } from '../database_integration/DataBaseWorker';
 import { approveRequest, rejectRequest } from '../utils/holidayManager';
 
 const router = express.Router();
@@ -8,8 +8,8 @@ const router = express.Router();
 
 router.get('/', async(req:Request, res:Response) => {
     try {
-        const holidayRequests = await dbWorker.getRequests();
-        const employees = await dbWorker.getEmployees();
+        const holidayRequests = await dbHandler.getRequests();
+        const employees = await dbHandler.getEmployees();
         res.render('requests', { holidayRequests: holidayRequests, employees});
     } catch (error) {
     console.error(error);

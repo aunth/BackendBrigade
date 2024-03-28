@@ -9,6 +9,11 @@ class EmployeeController {
         return await employeeRepository.find({ order: { id: 'ASC' } });
     }
 
+    async createEmployee(data: Partial<Employee>) {
+        const employeeRepository = AppDataSource.getRepository(Employee);
+        //return await employeeRepository.save()
+    }
+
     async getEmployee(employeeName: string) {
         // Use TypeORM's repository API to find a single employee by ID
         const employeeRepository = AppDataSource.getRepository(Employee);

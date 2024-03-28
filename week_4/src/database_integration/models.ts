@@ -29,6 +29,20 @@ export interface BlackoutPeriodInterface extends Document {
     end_date: Date;
 }
 
+export interface CredentialInterface extends Document {
+    _id: Types.ObjectId;
+    employee_id: Types.ObjectId;
+    email: string;
+    password: string;
+}
+
+export const CredentialSchema = new Schema({
+    _id: {type: Types.ObjectId, require: true},
+    employee_id: { type: Types.ObjectId, ref: 'Employees', required: true},
+    email: {type: String, required: true},
+    password: {type: String, required: true},
+}, {collection: 'Credentials'})
+
 export const RequestSchema = new Schema({
 	_id: {type: Types.ObjectId, required: true},
     employee_id: { type: Types.ObjectId, ref: 'Employees', required: true },
@@ -62,3 +76,4 @@ export const DepartmentModel = mongoose.model<DepartmentInterface>('Departments'
 export const EmployeeModel = mongoose.model<EmployeeInterface>('Employees', EmployeeSchema);
 export const RequestModel = mongoose.model<RequestInterface>('Requests', RequestSchema);
 export const BlackoutPeriodModel = mongoose.model<BlackoutPeriodInterface>('BlackoutPeriods', BlackoutPeriodSchema);
+export const CredentialModel = mongoose.model<CredentialInterface>('Credentials', CredentialSchema);
