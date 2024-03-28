@@ -15,7 +15,7 @@ class DepartmentController {
         }
     }
 
-    async getDepartmentId(departmentName:string){
+    async getDepartmentId(departmentName:string | undefined){
         try {
             const departmentRepository = AppDataSource.getRepository(Department);
             const department = await departmentRepository.findOneBy({ name: departmentName });

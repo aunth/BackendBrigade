@@ -16,5 +16,6 @@ export class BlackoutPeriod extends BaseEntity{
   end_date: Date;
 
   @ManyToOne(() => Department, department => department.blackoutPeriods)
+  @JoinColumn({ name: 'department_id' })
   department: Department;
 }
