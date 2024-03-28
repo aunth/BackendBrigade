@@ -4,11 +4,12 @@ import { Types } from 'mongoose';
 import { dbWorker } from '../database_integration/DataBaseWorker';
 import { DatabaseType, dbConnector } from '../database_integration/db';
 import { updateRequestObject } from '../utils/holidayManager';
+import { authenticationMiddleware } from '../config/passportConfig';
 
 const router = express.Router();
 
 
-router.get('/', async(req: Request, res: Response) => {
+router.get('/', authenticationMiddleware, async(req: Request, res: Response) => {
     const error = req.query.error;
     let employeeId: string | Types.ObjectId | number = req.query.employeeId as string;
     if (dbConnector.currentDatabaseType == DatabaseType.MongoDB) {

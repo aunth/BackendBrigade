@@ -95,13 +95,13 @@ class DepartmentWorker {
 	  }
   }
 
-  async findDepartmentByName(name: string): Promise<DepartmentInterface | null> {
+  async findDepartmentByName(name: string | undefined): Promise<Types.ObjectId | undefined> {
     try {
       const department = await DepartmentModel.findOne({ name });
-      return department;
+      return department?._id;
     } catch (error) {
       console.error('Error finding department:', error);
-      return null;
+      throw error;
     }
   }
 

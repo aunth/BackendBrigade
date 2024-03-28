@@ -24,6 +24,21 @@ CREATE TABLE Employees (
     FOREIGN KEY (department_id) REFERENCES Departments(id) ON DELETE SET NULL
 );
 
+CREATE TABLE Employee_Credentials (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255),
+    employee_id INTEGER NOT NULL,
+    CONSTRAINT FOREIGN KEY(employee_id) 
+        REFERENCES employees(id)
+        ON DELETE CASCADE
+);
+
+INSERT INTO Employee_Credentials (email, password, employee_id) VALUES
+('biletskyi.game@gmail.com', '1111', 'UA', 1),
+('JaneSmith@gmail.com', '2222', 'IT', 2),
+('JohnSmith@gmail.com', '3333', 'UA', 3);
+
 -- Create Holidays table
 CREATE TABLE Requests (
     id SERIAL PRIMARY KEY,

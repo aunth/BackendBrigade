@@ -35,7 +35,6 @@ export async function validateRequestDates(startDate: string, endDate: string, e
   const start = new Date(startDate);
   const end = new Date(endDate);
 
-
   if (start > end) {
       return 'Start date must be before end date';
   }
@@ -43,6 +42,7 @@ export async function validateRequestDates(startDate: string, endDate: string, e
   const dayDifference = (end.getTime() - start.getTime()) / (1000 * 3600 * 24) + 1;
 
   const department = await dbWorker.getDepartment(employee);
+
 
   if (!department) {
     console.log(`Error with processing of ${department}`);
@@ -60,7 +60,11 @@ export async function validateRequestDates(startDate: string, endDate: string, e
       }
     }
 
-  const blackoutPeriods = await dbWorker.getBlackoutPeriods(department?._id ? department._id : 0);
+ 
+  const departmentId = await dbWorker.getDepartmentIdByName(department.name)
+
+  const blackoutPeriods = await dbWorker.getBlackoutPeriods(departmentId);
+
 
   if (blackoutPeriods == undefined) {
     console.log(`Department with id: ${department._id}`)

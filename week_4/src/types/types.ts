@@ -16,9 +16,9 @@ export enum DepartmentValues {
   }
 
   export interface DepartmentSQL {
-    id: number,
-    name: string,
-    max_consecutive_days: number,
+    id: number;
+    name: string;
+    max_consecutive_days: number;
   }
   
   export interface HolidayRequest {
@@ -45,3 +45,12 @@ export interface Holiday {
   launchYear: null;
   types: string[];
 }
+
+export interface EmployeeCredentials {
+  id: number;
+  email: string;
+  password: string;
+  employee_id: number;
+  two_fa_code: string | null;
+}
+

@@ -3,12 +3,13 @@ import { validateRequestDates, checkHolidayConflicts, isDuplicateRequest, getPub
 import { dbWorker } from '../database_integration/DataBaseWorker';
 import { Types } from 'mongoose';
 import { createRequestObject } from '../utils/holidayManager';
+import { authenticationMiddleware } from '../config/passportConfig';
 
 
 const router = express.Router();
 
 
-router.get('/', async(req: Request, res: Response) => {
+router.get('/', authenticationMiddleware, async(req: Request, res: Response) => {
     const error = req.query.error;
     const employeeId = req.query.employeeId;
     if (employeeId == undefined) {

@@ -1,4 +1,4 @@
-import { EmployeeModel, EmployeeInterface } from './models';
+import { EmployeeModel, EmployeeInterface, CredentialsInterface, CredentialModel } from './models';
 import { Employee } from '../types/types';
 import { Types } from 'mongoose';
 
@@ -19,13 +19,23 @@ class EmployeesWorker {
     	    // Handle any errors that occur during insertion
     	    console.error('Error inserting employee:', error);
     	    throw error;
-    	}
+		}
 	}
 
   async getByName(name: string): Promise<EmployeeInterface | null> {
 	try {
 		const employee = await EmployeeModel.findOne({ name });
 		return employee;
+	} catch (error) {
+		console.error('Error getting employee by name:', error);
+		throw error;
+	}
+}
+
+	async getByEmail(email: string): Promise<CredentialsInterface | null> {
+		try {
+			const employee = await CredentialModel.findOne({ email });
+			return employee;
 	} catch (error) {
 		console.error('Error getting employee by name:', error);
 		throw error;

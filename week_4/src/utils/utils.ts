@@ -5,6 +5,10 @@ import { EmployeeInterface, RequestInterface } from '../database_integration/mod
 import { DatabaseType, dbConnector } from '../database_integration/db';
 import { dbWorker } from '../database_integration/DataBaseWorker';
 import { Types } from 'mongoose';
+import nodemailer from 'nodemailer'
+
+import dotenv from 'dotenv';
+dotenv.config();
 
 export const employeesFilename = './data/employees.json';
 export const holidaysFilename = './data/holidays.json';
@@ -51,4 +55,40 @@ export async function getCountryById(id: number | Types.ObjectId): Promise<strin
 
 export function findEmploee(employees: Employee[], empId: number){
   return employees.find(emp => emp.id === empId);
+}
+
+
+function generate2FACode() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+async function send2FACode(email: string, code: string) {
+  let transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL,
+        pass: process.env.APP_PASSWORD
+    }
+  });
+
+  let info = await transporter.sendMail({
+      from: '"BACKEND_BRIGADE SECURITY SERVICE" wwg.backend.brigade@gmail.com',
+      to: email,
+      subject: 'Your 2FA Code',
+      text: `Your 2FA code is: ${code}`,
+      html: `<b>Your 2FA code is: ${code}</b>`
+  });
+
+  console.log('Message sent: %s', info.messageId);
+  return { status: true, message: "2FA code sent successfully!" };
+}
+
+
+export async function handle2FACodeRequest(email: string) {
+  const code = generate2FACode();
+  if (await dbWorker.save2FACode(email, code)) {
+    return await send2FACode(email, code);
+  } else {
+    return { status: false, message: "2FA code already exists." };
+  }
 }

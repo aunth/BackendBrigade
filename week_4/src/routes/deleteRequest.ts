@@ -6,10 +6,11 @@ import { dbWorker } from '../database_integration/DataBaseWorker';
 import { RequestInterface } from '../database_integration/models';
 import { Types } from 'mongoose';
 import { dbConnector, DatabaseType } from '../database_integration/db';
+import { authenticationMiddleware } from '../config/passportConfig';
 
 const router = express.Router();
 
-router.get('/', async(req: Request, res: Response) => {
+router.get('/', authenticationMiddleware, async(req: Request, res: Response) => {
 	let employeeId: Types.ObjectId | number | string = req.query.employeeId as string;
 
 	if (!employeeId) {

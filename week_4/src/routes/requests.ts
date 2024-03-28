@@ -2,11 +2,13 @@
 import express, {Response, Request} from 'express';
 import { dbWorker } from '../database_integration/DataBaseWorker';
 import { approveRequest, rejectRequest } from '../utils/holidayManager';
+//mport { requireAuth } from '../config/passportConfig';
+import { authenticationMiddleware } from '../config/passportConfig';
 
 const router = express.Router();
 
 
-router.get('/', async(req:Request, res:Response) => {
+router.get('/', authenticationMiddleware, async(req:Request, res:Response) => {
     try {
         const holidayRequests = await dbWorker.getRequests();
         const employees = await dbWorker.getEmployees();

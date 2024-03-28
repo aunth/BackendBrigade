@@ -2,12 +2,13 @@ import { employeeWorker } from "./EmployeeWorker";
 import { blackoutPeriodWorker } from "./HolidayWorker";
 import { departmentWorker } from "./DepartmentWorker";
 import { requestWorker } from "./RequestWorker";
-import { Employee, DepartmentSQL, HolidayRequest } from "../types/types";
+import { Employee, DepartmentSQL, HolidayRequest, EmployeeCredentials } from "../types/types";
 import { DBConnector, DatabaseType } from "./db";
-import { EmployeeInterface, BlackoutPeriodInterface, EmployeeModel, DepartmentInterface, RequestInterface } from "./models";
+import { EmployeeInterface, BlackoutPeriodInterface, EmployeeModel, DepartmentInterface, RequestInterface, CredentialsInterface } from "./models";
 import { Types } from "mongoose";
 import { holidayRulesByDepartment } from "../../data/dataStore";
 import { employeeController } from "../controllers/employee.controller"
+import { employeeCredentialController } from "../controllers/employee.credential.controller"
 import { departmentController } from "../controllers/department.controller";
 import { blackoutPeriodsController } from "../controllers/blackoutperiods.controller";
 import { requestController } from "../controllers/request.controller";
@@ -32,6 +33,64 @@ export class DBWorker {
         }
     }
 
+    async getEmployeeByEmail(email: string): Promise<CredentialsInterface | EmployeeCredentials | null> {
+        try {
+            if (this.dbConnector.currentDatabaseType === DatabaseType.MongoDB) {
+                return await employeeWorker.getByEmail(email);
+            } else {
+                return await employeeCredentialController.getByEmail(email);
+            }
+        } catch (error) {
+            throw error;
+        }
+    }
+
+
+    async getEmployeeByJwtPayLoad(jwtPayLoad: any): Promise<Employee | null> {
+        try {
+            if (this.dbConnector.currentDatabaseType === DatabaseType.MongoDB) {
+                //return await employeeWorker.getByEmail(email);
+                console.log("Need implement for MongoDB");
+                return null;
+            } else {
+                return await employeeController.getEmployeeByJwt(jwtPayLoad);
+            }
+        } catch (error) {
+            throw error;
+        }
+    }
+
+
+    async save2FACode(email: string, code:string) {
+        try {
+            if (this.dbConnector.currentDatabaseType === DatabaseType.MongoDB) {
+                //return await employeeWorker.getByEmail(email);
+                console.log("Need implement for MongoDB");
+                return null;
+            } else {
+                return await employeeCredentialController.saveCode(email, code);
+            }
+        } catch (error) {
+            throw error;
+        }
+    }
+
+
+    async verify2FACode(employeeId: string | Types.ObjectId, code:string){
+        try {
+            if (this.dbConnector.currentDatabaseType === DatabaseType.MongoDB) {
+                //return await employeeWorker.getByEmail(email);
+                console.log("Need implement for MongoDB");
+                return null;
+            } else {
+                return await employeeCredentialController.verifyCode(employeeId as string, code);
+            }
+        } catch (error) {
+            throw error;
+        }
+    }
+
+
     async getEmployeeByName(name: string): Promise<EmployeeInterface | Employee | null> {
         try {
             if (this.dbConnector.currentDatabaseType === DatabaseType.MongoDB) {
@@ -40,11 +99,11 @@ export class DBWorker {
                 return await employeeController.getEmployee(name);
             }
         } catch (error) {
-            throw error; // Re-throw for further handling
+            throw error;
         }
     }
 
-    async getBlackoutPeriods(id: Types.ObjectId | number) {
+    async getBlackoutPeriods(id: Types.ObjectId | number | null | undefined) {
         try {
             if (this.dbConnector.currentDatabaseType === DatabaseType.MongoDB) {
                 return await departmentWorker.getBlackoutPeriod(id as Types.ObjectId);
@@ -192,13 +251,14 @@ export class DBWorker {
        }
     }
 
-    async getDepartmentIdByName(departmentName:string){
+    async getDepartmentIdByName(departmentName:string | undefined){
         try {
             if (this.dbConnector.currentDatabaseType === DatabaseType.MongoDB) {
+                
                 return await departmentWorker.findDepartmentByName(departmentName);
             } else {
-                //return await departmentController.getDepartmentId(departmentName);
-                throw new Error('Unsupported database type');
+                return await departmentController.getDepartmentId(departmentName);
+                
             }
         } catch (error) {
             console.error('Error reading departments:', error);
