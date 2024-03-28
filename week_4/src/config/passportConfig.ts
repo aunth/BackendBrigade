@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 import dotenv from 'dotenv';
 import { EmployeeCredentials } from '../types/types';
-import { dbWorker } from '../database_integration/DataBaseWorker';
+import { dbHandler } from '../database_integration/DataBaseWorker';
 
 dotenv.config();
 
@@ -19,7 +19,7 @@ passport.use(
         secretOrKey: process.env.JWT_SECRET as string,
       },
       async function (jwtPayload, done) {
-        return await dbWorker.getEmployeeByJwtPayLoad(jwtPayload)
+        return await dbHandler.getEmployeeByJwtPayLoad(jwtPayload)
           .then((user) => {
             console.log(user);
             return done(null, user);
@@ -49,7 +49,7 @@ export const authenticationMiddleware = (req: Request, res: Response, next: Next
 //      secretOrKey: process.env.JWT_SECRET as string,
 //    },
 //    async function (jwtPayload, done) {
-//      return await dbWorker.getEmployeeByJwtPayLoad(jwtPayload)
+//      return await dbHandler.getEmployeeByJwtPayLoad(jwtPayload)
 //        .then((user) => {
 //          console.log(user);
 //          return done(null, user);

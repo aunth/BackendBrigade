@@ -60,15 +60,11 @@ export async function validateRequestDates(startDate: string, endDate: string, e
       }
     }
 
-<<<<<<< HEAD
-  const blackoutPeriods = await dbHandler.getBlackoutPeriods(department?._id ? department._id : 0);
-=======
  
-  const departmentId = await dbWorker.getDepartmentIdByName(department.name)
+  const departmentId = await dbHandler.getDepartmentIdByName(department.name)
 
-  const blackoutPeriods = await dbWorker.getBlackoutPeriods(departmentId);
+  const blackoutPeriods = await dbHandler.getBlackoutPeriods(departmentId);
 
->>>>>>> 106e7bad2a44130ce8bc2fc7ef16de6180f7dfce
 
   if (blackoutPeriods == undefined) {
     console.log(`Department with id: ${department._id}`)

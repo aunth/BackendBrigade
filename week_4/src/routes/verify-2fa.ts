@@ -2,7 +2,7 @@ import express, { Response, Request } from 'express';
 import jwt from 'jsonwebtoken'
 import bcryptjs from 'bcryptjs';
 import passport  from 'passport';
-import { dbWorker } from '../database_integration/DataBaseWorker';
+import { dbHandler } from '../database_integration/DataBaseWorker';
 import { Types } from 'mongoose';
 
 import dotenv from 'dotenv';
@@ -33,7 +33,7 @@ router.post('/', async (req, res) => {
       //  return res.status(200).json({ message: "2FA code sent to your email." });
       //} else {
 
-        const isValid2FA = await dbWorker.verify2FACode(employeeId, twoFactorCode);
+        const isValid2FA = await dbHandler.verify2FACode(employeeId, twoFactorCode);
         if (!isValid2FA) {
           return res.status(400).json({ message: "Invalid 2FA code." });
         }

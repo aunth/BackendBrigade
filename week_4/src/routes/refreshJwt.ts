@@ -3,7 +3,7 @@ import { uri } from '../database_integration/db';
 import { AppDataSource } from '../database';
 import jwt, { JwtPayload, VerifyErrors } from 'jsonwebtoken';
 import express from 'express';
-import { dbWorker } from '../database_integration/DataBaseWorker';
+import { dbHandler } from '../database_integration/DataBaseWorker';
 
 
 const router = express.Router();
@@ -27,7 +27,7 @@ router.get('/', async (req, res) => {
         const employeeEmail = decoded.email;
 
         try {
-            const employee = await dbWorker.getEmployeeById(employeeId);
+            const employee = await dbHandler.getEmployeeById(employeeId);
             if (!employee) {
                 return res.status(404).json({ message: 'Employee not found' });
             }

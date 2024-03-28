@@ -2,7 +2,7 @@ import express, { Response, Request } from 'express';
 import jwt from 'jsonwebtoken'
 import bcryptjs from 'bcryptjs';
 import passport  from 'passport';
-import { dbWorker } from '../database_integration/DataBaseWorker';
+import { dbHandler } from '../database_integration/DataBaseWorker';
 import { handle2FACodeRequest } from '../utils/utils';
 import { getEmployeeId } from '../utils/utils';
 
@@ -34,11 +34,11 @@ router.post('/login', async (req, res) => {
   //});
   
   try {
-    const employee = await dbWorker.getEmployeeByEmail(email);
+    const employee = await dbHandler.getEmployeeByEmail(email);
     console.log(employee);
     console.log(employee?.email);
     if (!(employee?.email)) {
-      return res.redirect(`/?error=Email does not match!`);
+      return res.redirect(`/?error=User with this email doesn't exist!`);
       //return res.status(400).json({ message: "Email does not match!" });
     }
 
@@ -57,14 +57,14 @@ router.post('/login', async (req, res) => {
 
 
     if (employee.two_fa_code){
-      return res.redirect(`/verify-2fa?employeeId=${encodeURIComponent(employee.employee_id)}`);
+      return res.redirect(`/verify-2fa?employeeId=${encodeURIComponent(employee.employee_id.toString())}`);
     }
 
     const twoFaCode = (await handle2FACodeRequest(employee.email));
 
     if (twoFaCode.status) {
 
-      return res.redirect(`/verify-2fa?employeeId=${encodeURIComponent(employee.employee_id)}`);
+      return res.redirect(`/verify-2fa?employeeId=${encodeURIComponent(employee.employee_id.toString())}`);
 
     } else {
       return res.redirect(`/?error=${twoFaCode.message}`);

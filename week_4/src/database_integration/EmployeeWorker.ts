@@ -1,4 +1,4 @@
-import { EmployeeModel, EmployeeInterface, CredentialsInterface, CredentialModel } from './models';
+import { EmployeeModel, EmployeeInterface, CredentialInterface, CredentialModel } from './models';
 import { Employee } from '../types/types';
 import { Types } from 'mongoose';
 
@@ -33,7 +33,7 @@ class EmployeesWorker {
 	}
 }
 
-	async getByEmail(email: string): Promise<CredentialsInterface | null> {
+	async getByEmail(email: string): Promise<CredentialInterface | null> {
 		try {
 			const employee = await CredentialModel.findOne({ email });
 			return employee;

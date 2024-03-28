@@ -7,14 +7,10 @@ import { authenticationMiddleware } from '../config/passportConfig';
 
 const router = express.Router();
 
-<<<<<<< HEAD
-router.get('/', async (req: Request, res: Response) => {
+
+router.get('/', authenticationMiddleware, async (req: Request, res: Response) => {
   const name = req.query.name || undefined;
   res.render('main', { name });
-=======
-router.get('/', authenticationMiddleware, async (req: Request, res: Response) => {
-  res.render('main');
->>>>>>> 106e7bad2a44130ce8bc2fc7ef16de6180f7dfce
 });
 
 router.post('/', async (req, res) => {

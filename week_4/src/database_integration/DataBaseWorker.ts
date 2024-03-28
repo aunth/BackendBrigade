@@ -4,7 +4,7 @@ import { departmentWorker } from "./DepartmentWorker";
 import { requestWorker } from "./RequestWorker";
 import { Employee, DepartmentSQL, HolidayRequest, EmployeeCredentials } from "../types/types";
 import { DBConnector, DatabaseType } from "./db";
-import { EmployeeInterface, BlackoutPeriodInterface, EmployeeModel, DepartmentInterface, RequestInterface, CredentialsInterface } from "./models";
+import { EmployeeInterface, BlackoutPeriodInterface, EmployeeModel, DepartmentInterface, RequestInterface, CredentialInterface } from "./models";
 import { Types } from "mongoose";
 import { holidayRulesByDepartment } from "../../data/dataStore";
 import { employeeController } from "../controllers/employee.controller"
@@ -58,7 +58,6 @@ export class DBHandler {
                 password: hashedPassword,
             }
             await employeeWorker.insertEmployee(mainData as EmployeeInterface);
-            //await 
         } else {
             return await employeeController.createEmployee({
                 name: data.name,
@@ -69,7 +68,7 @@ export class DBHandler {
         }
     }
 
-    async getEmployeeByEmail(email: string): Promise<CredentialsInterface | EmployeeCredentials | null> {
+    async getEmployeeByEmail(email: string): Promise<CredentialInterface | EmployeeCredentials | null> {
         try {
             if (this.dbConnector.currentDatabaseType === DatabaseType.MongoDB) {
                 return await employeeWorker.getByEmail(email);
