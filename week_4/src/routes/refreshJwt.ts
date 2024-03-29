@@ -30,7 +30,7 @@ router.get('/', async (req, res) => {
             const newToken = jwt.sign(
                 { id: employeeId, email: employeeEmail },
                 process.env.JWT_SECRET as string,
-                { expiresIn: '1m' }
+                { expiresIn: '1h' }
             );
 
             res.cookie('token', newToken, {
