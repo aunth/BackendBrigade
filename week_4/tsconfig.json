@@ -4,13 +4,14 @@
 	  "module": "CommonJS",                
 	  "outDir": "./dist",                  
 	  "strict": true,
-	  "strictPropertyInitialization": false,                     
+	  "strictPropertyInitialization": false,
 	  "esModuleInterop": true,             
 	  "skipLibCheck": true,                
 	  "forceConsistentCasingInFileNames": true,
 	  "emitDecoratorMetadata": true,
 	  "experimentalDecorators": true,
+	  "types": ["jest"],
 	},
-	"include": ["src/**/*.ts"],          
+	"include": ["src/**/*.ts", "test/**/*", "dist/test/authentication.test.js"],          
 	"exclude": ["node_modules"]    
   }

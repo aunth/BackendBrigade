@@ -1,6 +1,3 @@
-import { DatabaseType, DBConnector } from '../database_integration/db';
-import { uri } from '../database_integration/db';
-import { AppDataSource } from '../database';
 import jwt, { JwtPayload, VerifyErrors } from 'jsonwebtoken';
 import express from 'express';
 import { dbHandler } from '../database_integration/DataBaseWorker';
@@ -33,7 +30,7 @@ router.get('/', async (req, res) => {
             const newToken = jwt.sign(
                 { id: employeeId, email: employeeEmail },
                 process.env.JWT_SECRET as string,
-                { expiresIn: '15s' }
+                { expiresIn: '1m' }
             );
 
             res.cookie('token', newToken, {

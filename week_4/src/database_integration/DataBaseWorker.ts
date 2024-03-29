@@ -43,7 +43,6 @@ export class DBHandler {
             throw Error("This name alredy exist");
         }
         if (this.dbConnector.currentDatabaseType == DatabaseType.MongoDB) {
-            console.log(data.remainingHolidays);
             const mainData = {
                 _id: new Types.ObjectId(),
                 name: data.name,
@@ -64,13 +63,22 @@ export class DBHandler {
             await employeeWorker.insertEmployee(mainData as EmployeeInterface);
             await credentialHandler.insertCredential(aunthData as CredentialInterface);
         } else {
-            await employeeController.createEmployee({
+
+            const hashedPassword: string = await bcrypt.hash(data.password, 10);
+            const mainData = {
                 name: data.name,
-                department: data.department,
-                role: data.role,
+                department_id: data.department,
                 country: data.country,
                 remaining_holidays: data.remainingHolidays,
-            });
+                role: data.role,
+            };
+
+            const aunthData = {
+                email: data.email,
+                password: hashedPassword
+            }
+
+            await employeeController.createEmployee(mainData, aunthData);
         }
     }
 
@@ -116,7 +124,6 @@ export class DBHandler {
     async verify2FACode(employeeId: string | Types.ObjectId, code:string){
         try {
             if (this.dbConnector.currentDatabaseType === DatabaseType.MongoDB) {
-                //return await employeeWorker.getByEmail(email);
                 return await credentialHandler.verifyCode(employeeId as Types.ObjectId, code);
             } else {
                 return await employeeCredentialController.verifyCode(employeeId as string, code);
@@ -332,7 +339,6 @@ export class DBHandler {
 
     async getEmployeesFromObject() {
         const employees: any = getEmployees();
-        console.log()
         for (let employee of employees) {
             const departmentId = await dbHandler.getDepartmentIdByName(employee.department);
             const departmentObjectId = departmentId ? departmentId : new Types.ObjectId();

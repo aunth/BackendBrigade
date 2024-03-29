@@ -6,4 +6,4 @@ services:
     env_file:
       - .env
     ports:
-      - "3000:3000"  # Adjust the port mapping as needed
+      - "3000:3000"

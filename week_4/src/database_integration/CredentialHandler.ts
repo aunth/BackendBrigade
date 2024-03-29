@@ -46,7 +46,7 @@ class CredentialHandler {
         if (credentials && credentials.two_fa_code === code) {
             console.log(`2FA code verified for employee ID: ${employee_id}`);
             
-            credentials.two_fa_code = code;
+            credentials.two_fa_code = null;
             await CredentialModel.updateOne({employee_id}, credentials);
     
             return {status: true, email: credentials.email};
@@ -58,9 +58,7 @@ class CredentialHandler {
 
     async saveCode(email: string, code: string) {
         try {
-            console.log('Here');
             const employee = await employeeWorker.getByEmail(email);
-            console.log(`Employee ${employee} with ${email} email`);
             if (!employee) {
                 console.log(`Employee with email ${email} not found.`);
                 return;

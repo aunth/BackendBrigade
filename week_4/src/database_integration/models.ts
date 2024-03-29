@@ -41,7 +41,7 @@ export interface CredentialInterface extends Document {
     employee_id: Types.ObjectId;
     email: string;
     password: string;
-    two_fa_code: string;
+    two_fa_code: string | null;
 }
 
 export const CredentialSchema = new Schema({

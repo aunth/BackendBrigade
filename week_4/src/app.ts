@@ -1,6 +1,6 @@
 import express from 'express';
-import session from 'express-session';
 import passport from 'passport';
+import session from 'express-session';
 import path from 'path';
 import dotenv from 'dotenv';
 import mainRouter from './routes/main';
@@ -20,25 +20,25 @@ import googleAuthRouter from './routes/google-auth';
 //import passport from "./config/passportConfig";
 import cookieParser from 'cookie-parser';
 import * as crypto from 'crypto';
-import { setDefaulCredentialValues } from './utils/utils';
-
 
 dotenv.config();
 
-const app = express();
+export const app = express();
 const port = process.env.PORT || 3000;
 
 const buffer = crypto.randomBytes(32);
 const secret = buffer.toString('hex');
 
 
+app.use(session({
+  secret: secret,
+  resave: false,
+  saveUninitialized: false
+}));
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(session({
-    secret: secret,
-    resave: false,
-    saveUninitialized: false
-}));
+
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(cookieParser());

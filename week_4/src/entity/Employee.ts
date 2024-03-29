@@ -14,14 +14,14 @@ export class Employee extends BaseEntity {
   @Column({ name: 'department_id' })
   department_id: number;
 
-  @Column({name: 'role', default: 'employee'})
-  role: string;
-
   @Column()
   country: string;
 
   @Column()
   remaining_holidays: number;
+
+  @Column({ default: 'employee' })
+  role: string;
 
   @OneToOne(() => EmployeeCredentials, credentials => credentials.employee)
   credentials: EmployeeCredentials;
