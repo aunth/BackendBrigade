@@ -33,10 +33,6 @@ router.post('/login', async (req, res) => {
       return res.redirect(`/?error=Password does not match!`);
     }
 
-    if (employee.two_fa_code){
-      return res.redirect(`/verify-2fa?employeeId=${encodeURIComponent(employee.employee_id.toString())}`);
-    }
-
     const twoFaCode = await handle2FACodeRequest(employee.email);
 
     if (employee.two_fa_code){

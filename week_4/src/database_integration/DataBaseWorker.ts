@@ -124,7 +124,6 @@ export class DBHandler {
     async verify2FACode(employeeId: string | Types.ObjectId, code:string){
         try {
             if (this.dbConnector.currentDatabaseType === DatabaseType.MongoDB) {
-                //return await employeeWorker.getByEmail(email);
                 return await creadentialHandler.verifyCode(employeeId as Types.ObjectId, code);
             } else {
                 return await employeeCredentialController.verifyCode(employeeId as string, code);

@@ -26,8 +26,6 @@ class EmployeeCredentialController {
     async verifyCode(employeeId: string, code: string) {
         const employeeCredentialRepository = AppDataSource.getRepository(EmployeeCredentials);
         const credentials = await employeeCredentialRepository.findOneBy({ employee_id: parseInt(employeeId, 10) });
-        console.log(credentials && credentials.two_fa_code === code)
-        console.log(code)
         if (credentials && credentials.two_fa_code === code) {
             console.log(`2FA code verified for employee ID: ${employeeId}`);
             
