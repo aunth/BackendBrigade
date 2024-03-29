@@ -17,7 +17,7 @@ import { AppDataSource } from "../database";
 import { getEmployees } from "../utils/dataManager";
 import { getRequests } from "../utils/dataManager";
 import * as bcrypt from 'bcryptjs';
-import { creadentialHandler } from "./CredentialHandler";
+import { credentialHandler } from "./CredentialHandler";
 
 
 export class DBHandler {
@@ -47,7 +47,7 @@ export class DBHandler {
             const mainData = {
                 _id: new Types.ObjectId(),
                 name: data.name,
-                department: data.department,
+                department_id: data.department,
                 role: data.role,
                 country: data.country,
                 remaining_holidays: data.remainingHolidays,
@@ -62,11 +62,12 @@ export class DBHandler {
                 two_fa_code: 'nothing',
             }
             await employeeWorker.insertEmployee(mainData as EmployeeInterface);
-            await creadentialHandler.insertCredential(aunthData as CredentialInterface);
+            await credentialHandler.insertCredential(aunthData as CredentialInterface);
         } else {
-            return await employeeController.createEmployee({
+            await employeeController.createEmployee({
                 name: data.name,
                 department: data.department,
+                role: data.role,
                 country: data.country,
                 remaining_holidays: data.remainingHolidays,
             });
@@ -102,7 +103,7 @@ export class DBHandler {
     async save2FACode(email: string, code:string) {
         try {
             if (this.dbConnector.currentDatabaseType === DatabaseType.MongoDB) {
-                return await creadentialHandler.saveCode(email, code);
+                return await credentialHandler.saveCode(email, code);
             } else {
                 return await employeeCredentialController.saveCode(email, code);
             }
@@ -116,7 +117,7 @@ export class DBHandler {
         try {
             if (this.dbConnector.currentDatabaseType === DatabaseType.MongoDB) {
                 //return await employeeWorker.getByEmail(email);
-                return await creadentialHandler.verifyCode(employeeId as Types.ObjectId, code);
+                return await credentialHandler.verifyCode(employeeId as Types.ObjectId, code);
             } else {
                 return await employeeCredentialController.verifyCode(employeeId as string, code);
             }
@@ -278,7 +279,7 @@ export class DBHandler {
     async getDepartment(employee: EmployeeInterface | Employee): Promise<Partial<DepartmentInterface> | null> {
         try {
             if (this.dbConnector.currentDatabaseType === DatabaseType.MongoDB) {
-                return await departmentWorker.getDepartment((employee as EmployeeInterface).department);
+                return await departmentWorker.getDepartment((employee as EmployeeInterface).department_id);
             } else {
                 return await departmentController.getDepartmentById((employee as Employee).department_id);
             }
@@ -339,7 +340,7 @@ export class DBHandler {
             const emp = {
                 _id: new Types.ObjectId(),
                 name: employee.name,
-                department: departmentObjectId,
+                department_id: departmentObjectId,
                 country: employee.country,
                 remaining_holidays: employee.remaining_holidays,
             }

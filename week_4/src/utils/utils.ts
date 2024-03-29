@@ -1,13 +1,16 @@
 
 import { Employee, HolidayRequest} from '../types/types';
 import { getEmployees } from './dataManager';
-import { EmployeeInterface, RequestInterface } from '../database_integration/models';
+import { CredentialInterface, EmployeeInterface, EmployeeModel, RequestInterface } from '../database_integration/models';
 import { DatabaseType, dbConnector } from '../database_integration/db';
 import { dbHandler } from '../database_integration/DataBaseWorker';
 import { Types } from 'mongoose';
 import nodemailer from 'nodemailer'
-
 import dotenv from 'dotenv';
+import { employeeWorker } from '../database_integration/EmployeeWorker';
+import * as bcrypt from 'bcryptjs';
+import { credentialHandler } from '../database_integration/CredentialHandler';
+
 dotenv.config();
 
 export const employeesFilename = './data/employees.json';
@@ -83,6 +86,27 @@ async function send2FACode(email: string, code: string) {
   console.log('Message sent: %s', info.messageId);
   return { status: true, message: "2FA code sent successfully!" };
 }
+
+export async function setDefaulCredentialValues() {
+    const employees = await EmployeeModel.find();
+    for (const employee of employees) {
+        const credentials = await credentialHandler.getCredentialByEmployeeId(employee._id);
+        console.log(credentials);
+        if (!credentials) {
+            const hashedPassword: string = await bcrypt.hash('2', 10);
+            const email = `${employee.name.replace(/\s+/g, '').toLowerCase()}@gmail.com`;
+            await credentialHandler.insertCredential({
+                _id: new Types.ObjectId(),
+                employee_id: employee._id,
+                email: email,
+                password: hashedPassword,
+                two_fa_code: '',
+            } as CredentialInterface);
+            console.log(`Credential for ${employee.name} was created`);
+        }
+    }
+}
+
 
 
 export async function handle2FACodeRequest(email: string) {

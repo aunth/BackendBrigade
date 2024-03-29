@@ -9,7 +9,7 @@ export enum Roles {
 export interface EmployeeInterface extends Document {
     _id: Types.ObjectId;
     name: string;
-    department: Types.ObjectId;
+    department_id: Types.ObjectId;
     role: string;
     country: string;
     remaining_holidays: number;
@@ -63,7 +63,7 @@ export const RequestSchema = new Schema({
 export const EmployeeSchema = new Schema({
     _id: { type: Types.ObjectId, required: true },
     name: { type: String, required: true },
-    department: { type: Types.ObjectId, ref: 'Departments', required: true },
+    department_id: { type: Types.ObjectId, ref: 'Departments', required: true },
     role: { type: String, required: true},
     country: { type: String, required: true },
     remaining_holidays: { type: Number, required: true }

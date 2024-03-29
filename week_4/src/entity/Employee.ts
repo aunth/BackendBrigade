@@ -14,6 +14,9 @@ export class Employee extends BaseEntity {
   @Column({ name: 'department_id' })
   department_id: number;
 
+  @Column({name: 'role', default: 'employee'})
+  role: string;
+
   @Column()
   country: string;
 

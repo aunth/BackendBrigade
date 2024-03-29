@@ -19,16 +19,23 @@ import registerRouter from './routes/registration';
 import googleAuthRouter from './routes/google-auth';
 //import passport from "./config/passportConfig";
 import cookieParser from 'cookie-parser';
+import * as crypto from 'crypto';
+import { setDefaulCredentialValues } from './utils/utils';
+
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
+const buffer = crypto.randomBytes(32);
+const secret = buffer.toString('hex');
+
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(session({
-    secret: 'your-secret-key',
+    secret: secret,
     resave: false,
     saveUninitialized: false
 }));

@@ -19,6 +19,16 @@ class CredentialHandler {
         }
     }
 
+    async getCredentialByEmployeeId(employeeId: Types.ObjectId): Promise<CredentialInterface | null> {
+        try {
+            const credential = await CredentialModel.findOne({ employee_id: employeeId });
+            return credential;
+        } catch (error) {
+            console.error('Error getting credential by employee ID:', error);
+            return null;
+        }
+    }
+
     async deleteCredential(credentialId: Types.ObjectId): Promise<boolean> {
         try {
             const result = await CredentialModel.deleteOne({ _id: credentialId });
@@ -87,4 +97,4 @@ class CredentialHandler {
     }
 }
 
-export const creadentialHandler = new CredentialHandler();
+export const credentialHandler = new CredentialHandler();

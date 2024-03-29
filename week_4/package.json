@@ -35,8 +35,7 @@
     "pg": "^8.11.3",
     "reflect-metadata": "^0.2.1",
     "start-server": "^0.0.4",
-    "typeorm": "^0.3.20",
-    "typescript": "^5.4.3"
+    "typeorm": "^0.3.20"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -64,7 +63,7 @@
     "reflect-metadata": "^0.2.1",
     "ts-node": "^10.9.2",
     "typeorm": "^0.3.20",
-    "typescript": "^5.4.2"
+    "typescript": "^5.4.3"
   },
   "description": ""
 }
