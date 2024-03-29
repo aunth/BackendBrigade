@@ -13,9 +13,9 @@ dotenv.config();
 const router = express.Router();
 
 router.get('/', async (req: Request, res: Response) => {
-  console.log(1)
+  const error = req.query.error;
   const employeeId = req.query.employeeId as string | Types.ObjectId;
-  res.render('verify-2fa', {employeeId: employeeId});
+  res.render('verify-2fa', { error: error, employeeId: employeeId });
 });
 
 
@@ -35,7 +35,8 @@ router.post('/', async (req, res) => {
 
         const isValid2FA = await dbWorker.verify2FACode(employeeId, twoFactorCode);
         if (!isValid2FA) {
-          return res.status(400).json({ message: "Invalid 2FA code." });
+          return res.redirect(`/verify-2fa?error=Invalid 2FA code!&employeeId=${employeeId}`);
+          //return res.status(400).json({ message: "Invalid 2FA code." });
         }
 
         const jwtToken = jwt.sign(

@@ -19,7 +19,7 @@ import cookieParser from 'cookie-parser';
 
 dotenv.config();
 
-const app = express();
+export const app = express();
 const port = process.env.PORT || 3000;
 
 
@@ -57,6 +57,6 @@ app.use('/update-request', updateRequestRouter)
 // Starting the server
 app.listen(port, () => {
   // Initialize the connect with MongoDB
-  dbConnector.switchDatabase(DatabaseType.MongoDB);
+  dbConnector.switchDatabase(DatabaseType.PostgreSQL);
   console.log(`Server running at http://localhost:${port}`);
 });

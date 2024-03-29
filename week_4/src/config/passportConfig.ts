@@ -35,6 +35,7 @@ passport.use(
 export const authenticationMiddleware = (req: Request, res: Response, next: NextFunction) => {
     passport.authenticate('jwt', { session: false }, (err: any, user:any, info:any) => {
       if (err || !user) {
+        
         return res.redirect('/');
       }
       req.user = user;

@@ -24,19 +24,21 @@ router.post('/login', async (req, res) => {
   const { token } = req.cookies;
 
   console.log(email);
-
-  //jwt.verify(token, process.env.JWT_SECRET as string, async (err: any, decoded: any) => {
-  //  if (err) {
-  //      return res.redirect('/');
-  //  } else {
-  //    return res.redirect('/main');
-  //  }
-  //});
   
   try {
     const employee = await dbWorker.getEmployeeByEmail(email);
     console.log(employee);
     console.log(employee?.email);
+
+    //jwt.verify(token, process.env.JWT_SECRET as string, async (err: any) => {
+    //  if (!err && employee?.two_fa_code == null) {
+    //      return res.redirect('/');
+    //  }
+    //});
+    //if (token) {
+    //  res.redirect('/main')
+    //}
+
     if (!(employee?.email)) {
       return res.redirect(`/?error=Email does not match!`);
       //return res.status(400).json({ message: "Email does not match!" });
@@ -60,7 +62,7 @@ router.post('/login', async (req, res) => {
       return res.redirect(`/verify-2fa?employeeId=${encodeURIComponent(employee.employee_id)}`);
     }
 
-    const twoFaCode = (await handle2FACodeRequest(employee.email));
+    const twoFaCode = await handle2FACodeRequest(employee.email);
 
     if (twoFaCode.status) {
 

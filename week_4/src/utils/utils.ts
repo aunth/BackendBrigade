@@ -86,7 +86,8 @@ async function send2FACode(email: string, code: string) {
 
 export async function handle2FACodeRequest(email: string) {
   const code = generate2FACode();
-  if (await dbWorker.save2FACode(email, code)) {
+  let isCodeSave = await dbWorker.save2FACode(email, code)
+  if (isCodeSave) {
     return await send2FACode(email, code);
   } else {
     return { status: false, message: "2FA code already exists." };
