@@ -1,21 +1,44 @@
 import { AppDataSource } from "../database";
+import { Department } from "../entity/Department";
 import { Employee } from "../entity/Employee";
+import {EmployeeCredentials } from "../entity/EmployeeCredential";
 
 
 class EmployeeController {
     async getEmployees() {
-        // Use TypeORM's repository API to find all employees
         const employeeRepository = AppDataSource.getRepository(Employee);
         return await employeeRepository.find({ order: { id: 'ASC' } });
     }
 
-    async createEmployee(data: Partial<Employee>) {
+    async createEmployee(mainData: Partial<Employee>, aunthData: Partial<EmployeeCredentials>) {
         const employeeRepository = AppDataSource.getRepository(Employee);
-        //return await employeeRepository.save()
+        const credentialsRepository = AppDataSource.getRepository(EmployeeCredentials);
+        
+        let newEmployee = new Employee();
+        newEmployee.name = mainData.name as string;
+        newEmployee.department_id = mainData.department_id as number
+       
+        newEmployee.country = mainData.country as string;
+        
+        newEmployee.remaining_holidays = mainData.remaining_holidays as number;
+        
+        newEmployee.role = mainData.role as string;
+        
+        newEmployee = await employeeRepository.save(newEmployee);
+
+
+        let newCredentials = new EmployeeCredentials();
+        newCredentials.email = aunthData.email as string;
+        newCredentials.password = aunthData.password as string;
+
+        newCredentials.employee = newEmployee;
+
+        newCredentials = await credentialsRepository.save(newCredentials);
+
+        return { newEmployee, newCredentials };
     }
 
     async getEmployee(employeeName: string) {
-        // Use TypeORM's repository API to find a single employee by ID
         const employeeRepository = AppDataSource.getRepository(Employee);
         const employee = await employeeRepository.findOneBy({ name: employeeName });
         if (!employee) {

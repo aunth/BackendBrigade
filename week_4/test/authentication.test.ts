@@ -1,6 +1,6 @@
 import request from 'supertest';
 import { app } from '../src/app';
-import { dbWorker } from '../src/database_integration/DataBaseWorker';
+import { dbHandler } from '../src/database_integration/DataBaseWorker';
 
 
 describe('Authentication System', () => {
@@ -31,7 +31,7 @@ describe('Authentication System', () => {
               two_fa_code: null
           };
           
-          const stub = jest.spyOn(dbWorker, 'getEmployeeByEmail').mockResolvedValue(mockEmployee);
+          const stub = jest.spyOn(dbHandler, 'getEmployeeByEmail').mockResolvedValue(mockEmployee);
           
           const response = await request(app)
             .post('/login')

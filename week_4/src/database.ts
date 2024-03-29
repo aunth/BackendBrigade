@@ -27,21 +27,3 @@ export const AppDataSource = new DataSource({
     migrations: ["src/migrations/*{.ts,.js}"],
 });
 
-//export const  AppDataSource = new DataSource({
-//    type: "postgres",
-//    host: '127.0.0.1',
-//    port: 5432,
-//    username: 'postgres',
-//    password: '1234',
-//    database: 'test',
-//    //entities: [Employee, Request, Department, BlackoutPeriod],
-//    entities: ["src/entity/**/*.ts"],
-//    synchronize: false,
-//    dropSchema: false,
-//    logging: false,
-//    //ssl: {
-//    //    rejectUnauthorized: true
-//    //}
-//    migrations: ["src/migration/**/*.ts"],
-//  });
-

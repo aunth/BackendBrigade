@@ -20,6 +20,9 @@ export class Employee extends BaseEntity {
   @Column()
   remaining_holidays: number;
 
+  @Column({ default: 'employee' })
+  role: string;
+
   @OneToOne(() => EmployeeCredentials, credentials => credentials.employee)
   credentials: EmployeeCredentials;
 

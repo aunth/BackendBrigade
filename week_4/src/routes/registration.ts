@@ -10,7 +10,6 @@ router.get('/', async (req: Request, res: Response) => {
         const error = req.query.error || '';
         const name = req.query.name || undefined;
         const email = req.query.email || undefined;
-        console.log(Object.values(Roles));
         res.render('registration', { departments, error, name, email, roles: Object.values(Roles)});
     } catch (error) {
         console.error('Error rendering registration page:', error);
@@ -21,10 +20,10 @@ router.get('/', async (req: Request, res: Response) => {
 router.post('/', async (req: Request, res: Response) => {
     const data = req.body;
     try {
-        console.log(data);
         await dbHandler.createNewEmployee(data);
         return res.redirect(`/?name=${encodeURIComponent(data.name)}`);
     } catch (error) {
+        console.log(error);
         return res.redirect('/registration?error=' + 'This name already taken');
     }
 });
