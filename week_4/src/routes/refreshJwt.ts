@@ -3,7 +3,7 @@ import { uri } from '../database_integration/db';
 import { AppDataSource } from '../database';
 import jwt, { JwtPayload, VerifyErrors } from 'jsonwebtoken';
 import express from 'express';
-import { dbWorker } from '../database_integration/DataBaseWorker';
+import { dbHandler } from '../database_integration/DataBaseWorker';
 
 
 const router = express.Router();
@@ -11,8 +11,6 @@ const router = express.Router();
 
 router.get('/', async (req, res) => {
     const { token } = req.cookies;
-
-    console.log(123);
 
     if (!token) {
         return res.status(401).json({ message: 'No token provided' });
@@ -27,7 +25,7 @@ router.get('/', async (req, res) => {
         const employeeEmail = decoded.email;
 
         try {
-            const employee = await dbWorker.getEmployeeById(employeeId);
+            const employee = await dbHandler.getEmployeeById(employeeId);
             if (!employee) {
                 return res.status(404).json({ message: 'Employee not found' });
             }
@@ -35,7 +33,7 @@ router.get('/', async (req, res) => {
             const newToken = jwt.sign(
                 { id: employeeId, email: employeeEmail },
                 process.env.JWT_SECRET as string,
-                { expiresIn: '1h' }
+                { expiresIn: '15s' }
             );
 
             res.cookie('token', newToken, {

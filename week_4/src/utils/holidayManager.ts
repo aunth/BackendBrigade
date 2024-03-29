@@ -4,7 +4,7 @@ import { getCountryById } from './utils';
 import { getDaysNum } from './utils';
 import * as fs from 'fs';
 import { Types } from 'mongoose';
-import { dbWorker } from '../database_integration/DataBaseWorker';
+import { dbHandler } from '../database_integration/DataBaseWorker';
 
 export const employeesFilename = './data/employees.json';
 export const holidaysFilename = './data/holidays.json';
@@ -41,7 +41,7 @@ export async function validateRequestDates(startDate: string, endDate: string, e
 
   const dayDifference = (end.getTime() - start.getTime()) / (1000 * 3600 * 24) + 1;
 
-  const department = await dbWorker.getDepartment(employee);
+  const department = await dbHandler.getDepartment(employee);
 
 
   if (!department) {
@@ -54,16 +54,16 @@ export async function validateRequestDates(startDate: string, endDate: string, e
       } else {
         if (dayDifference > consecutiveDays) {
           return 'Exceeds maximum consecutive holiday days';
-        } else if (await dbWorker.getRemainingHolidays(employee) < dayDifference) {
+        } else if (await dbHandler.getRemainingHolidays(employee) < dayDifference) {
           return 'Insufficient remaining holiday days';
         }
       }
     }
 
  
-  const departmentId = await dbWorker.getDepartmentIdByName(department.name)
+  const departmentId = await dbHandler.getDepartmentIdByName(department.name)
 
-  const blackoutPeriods = await dbWorker.getBlackoutPeriods(departmentId);
+  const blackoutPeriods = await dbHandler.getBlackoutPeriods(departmentId);
 
 
   if (blackoutPeriods == undefined) {
@@ -111,7 +111,7 @@ export async function checkHolidayConflicts(startDate: Date, endDate: Date, empl
 }
 
 export async function isDuplicateRequest(newRequest: HolidayRequest | RequestInterface): Promise<boolean> {
-  const holidayRequests = await dbWorker.getRequests();
+  const holidayRequests = await dbHandler.getRequests();
   const duplicate = holidayRequests.some(request => {
       if (newRequest.employee_id == request.employee_id) {
           const existingStartDate = new Date(request.start_date);
@@ -190,20 +190,20 @@ export function saveHolidayRequests(requests: HolidayRequest[]) {
 }
 
 export async function rejectRequest(requestId: string | Types.ObjectId) {
- await dbWorker.updateRequest(requestId as Types.ObjectId, {status: 'rejected'});
+ await dbHandler.updateRequest(requestId as Types.ObjectId, {status: 'rejected'});
  console.log(`Request with ${requestId} was rejected`);
 }
 
 
 export async function approveRequest(requestId: Types.ObjectId |string) {
-  const holidayRequest = await dbWorker.getRequestById(requestId);
+  const holidayRequest = await dbHandler.getRequestById(requestId);
 
   if (!holidayRequest) {
       console.error('Holiday request not found');
       return;
   }
 
-  const employee = await dbWorker.getEmployeeById(holidayRequest.employee_id);
+  const employee = await dbHandler.getEmployeeById(holidayRequest.employee_id);
 
   if (!employee) {
       console.error('Employee not found');
@@ -213,9 +213,9 @@ export async function approveRequest(requestId: Types.ObjectId |string) {
   const takenDays = getDaysNum(holidayRequest);
 
   if (takenDays >= 0) {
-      await dbWorker.updateRequest(requestId as Types.ObjectId, {status: 'approved'});
+      await dbHandler.updateRequest(requestId as Types.ObjectId, {status: 'approved'});
       if (dbConnector.currentDatabaseType == DatabaseType.MongoDB) {
-        await dbWorker.updateEmployeeById((employee as EmployeeInterface)._id, {remaining_holidays: employee.remaining_holidays - takenDays});
+        await dbHandler.updateEmployeeById((employee as EmployeeInterface)._id, {remaining_holidays: employee.remaining_holidays - takenDays});
       } else {
         await employeeController.updateEmployeeRemainingHolidays((employee as Employee).id, takenDays);
       }

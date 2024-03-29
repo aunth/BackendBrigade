@@ -1,21 +1,23 @@
 
 import express, {Response, Request} from 'express';
-import { dbWorker } from '../database_integration/DataBaseWorker';
+import { dbHandler } from '../database_integration/DataBaseWorker';
 import { getEmployeeId } from '../utils/utils';
 import { authenticationMiddleware } from '../config/passportConfig';
 
 
 const router = express.Router();
 
+
 router.get('/', authenticationMiddleware, async (req: Request, res: Response) => {
-  res.render('main');
+  const name = req.body.name;
+  res.render('main', { name });
 });
 
 router.post('/', async (req, res) => {
   const { employeeName, action } = req.body;
 
   try {
-    const employee = await dbWorker.getEmployeeByName(employeeName);
+    const employee = await dbHandler.getEmployeeByName(employeeName);
     if (!employee) {
       res.status(404).send(`Employee with name ${employeeName} does not exist.`);
       return;

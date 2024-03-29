@@ -3,7 +3,7 @@ import { Employee, HolidayRequest} from '../types/types';
 import { getEmployees } from './dataManager';
 import { EmployeeInterface, RequestInterface } from '../database_integration/models';
 import { DatabaseType, dbConnector } from '../database_integration/db';
-import { dbWorker } from '../database_integration/DataBaseWorker';
+import { dbHandler } from '../database_integration/DataBaseWorker';
 import { Types } from 'mongoose';
 import nodemailer from 'nodemailer'
 
@@ -40,7 +40,7 @@ export async function getEmployeeId(employee: EmployeeInterface | Employee) {
 }
 
 export async function getNameById(id: number | Types.ObjectId): Promise<string | undefined> {
-  const employee = await dbWorker.getEmployeeById(id);
+  const employee = await dbHandler.getEmployeeById(id);
   
   if (!employee) {
       return undefined;
@@ -49,7 +49,7 @@ export async function getNameById(id: number | Types.ObjectId): Promise<string |
 }
 
 export async function getCountryById(id: number | Types.ObjectId): Promise<string> {
-  const employee = await dbWorker.getEmployeeById(id)
+  const employee = await dbHandler.getEmployeeById(id)
   return employee ? employee.country : "";
 }
 
@@ -63,6 +63,7 @@ function generate2FACode() {
 }
 
 async function send2FACode(email: string, code: string) {
+  console.log('Sending request');
   let transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -86,7 +87,7 @@ async function send2FACode(email: string, code: string) {
 
 export async function handle2FACodeRequest(email: string) {
   const code = generate2FACode();
-  let isCodeSave = await dbWorker.save2FACode(email, code)
+  let isCodeSave = await dbHandler.save2FACode(email, code)
   if (isCodeSave) {
     return await send2FACode(email, code);
   } else {

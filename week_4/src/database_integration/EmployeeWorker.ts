@@ -1,4 +1,4 @@
-import { EmployeeModel, EmployeeInterface, CredentialsInterface, CredentialModel } from './models';
+import { EmployeeModel, EmployeeInterface, CredentialInterface, CredentialModel } from './models';
 import { Employee } from '../types/types';
 import { Types } from 'mongoose';
 
@@ -13,6 +13,7 @@ class EmployeesWorker {
     	    // Save the new document to the database
     	    const savedEmployee = await newEmployee.save();
 
+			console.log(`Employee with name ${employeeData.name} was registered`);
     	    // Return the saved document
     	    return savedEmployee;
     	} catch (error) {
@@ -32,13 +33,24 @@ class EmployeesWorker {
 	}
 }
 
-	async getByEmail(email: string): Promise<CredentialsInterface | null> {
-		try {
-			const employee = await CredentialModel.findOne({ email });
+	async getEmployeeByJwt(jwtPayLoad: any) {
+		const employee = await EmployeeModel.findById(jwtPayLoad.id);
+		if (!employee) {
+			console.log('No employee found with that name.');
+			return null;
+		} else {
 			return employee;
-	} catch (error) {
-		console.error('Error getting employee by name:', error);
-		throw error;
+		}
+	}
+
+	async getByEmail(email: string): Promise<CredentialInterface | null> {
+		try {
+			const credentialData = await CredentialModel.findOne({ email });
+			console.log("Finded user: " + credentialData);
+			return credentialData;
+		} catch (error) {
+			console.error('Error getting employee by name:', error);
+			throw error;
 	}
 }
 

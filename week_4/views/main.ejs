@@ -13,7 +13,7 @@
 </div>
     <form clas="main-form" action="/main" method="post">
         <label class="main-label" for="employeeId">Employee Name:</label>
-        <input class="main-input" type="text" id="employeeId" name="employeeName" required>
+        <input class="main-input" type="text" id="employeeId" name="employeeName" value="<%= name ? name : '' %>" <% if (name !== undefined) { %>readonly<% } %>>
         <br>
         <button class= "main-btn" type="submit" name="action" value="create">Create Request</button>
         <button class= "main-btn" type="submit" name="action" value="update">Update Request</button>

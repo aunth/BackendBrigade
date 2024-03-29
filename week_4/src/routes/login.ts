@@ -2,9 +2,10 @@ import express, { Response, Request } from 'express';
 import jwt from 'jsonwebtoken'
 import bcryptjs from 'bcryptjs';
 import passport  from 'passport';
-import { dbWorker } from '../database_integration/DataBaseWorker';
+import { dbHandler } from '../database_integration/DataBaseWorker';
 import { handle2FACodeRequest } from '../utils/utils';
 import { getEmployeeId } from '../utils/utils';
+import * as bcrypt from 'bcryptjs';
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -26,8 +27,9 @@ router.post('/login', async (req, res) => {
   console.log(email);
   
   try {
-    const employee = await dbWorker.getEmployeeByEmail(email);
-    console.log(employee);
+    const employee = await dbHandler.getEmployeeByEmail(email);
+    console.log(employee?.password);
+    console.log('Employee' + employee);
     console.log(employee?.email);
 
     //jwt.verify(token, process.env.JWT_SECRET as string, async (err: any) => {
@@ -40,18 +42,12 @@ router.post('/login', async (req, res) => {
     //}
 
     if (!(employee?.email)) {
-      return res.redirect(`/?error=Email does not match!`);
-      //return res.status(400).json({ message: "Email does not match!" });
+      return res.redirect(`/?error=User with this email doesn't exist!`);
     }
 
-    //const isMatch = await bcryptjs.compare(password, employee.password);
-    //if (!isMatch) {
-    //  return res.status(400).json({ message: "Password does not match!" });
-    //}
 
-    if (!(password == employee.password)) {
+    if (!(await bcrypt.compare(password, employee.password))) {
       return res.redirect(`/?error=Password does not match!`);
-      //return res.status(400).json({ message: "Password does not match!" });
     }
 
     console.log("employee.two_fa_code", employee.two_fa_code);
@@ -59,39 +55,34 @@ router.post('/login', async (req, res) => {
 
 
     if (employee.two_fa_code){
-      return res.redirect(`/verify-2fa?employeeId=${encodeURIComponent(employee.employee_id)}`);
+      return res.redirect(`/verify-2fa?employeeId=${encodeURIComponent(employee.employee_id.toString())}`);
     }
 
     const twoFaCode = await handle2FACodeRequest(employee.email);
 
+    if (employee.two_fa_code){
+      return res.redirect(`/verify-2fa?employeeId=${encodeURIComponent(employee.employee_id.toString())}`);
+    }
+
+    console.log(twoFaCode.status);
+    console.log(twoFaCode.message);
     if (twoFaCode.status) {
 
-      return res.redirect(`/verify-2fa?employeeId=${encodeURIComponent(employee.employee_id)}`);
+      return res.redirect(`/verify-2fa?employeeId=${encodeURIComponent(employee.employee_id.toString())}`);
 
     } else {
       return res.redirect(`/?error=${twoFaCode.message}`);
-      //return res.status(400).json({ message: "2FA code didn't send!" });
     }
-
-      //const jwtToken = jwt.sign(
-      //  { id: employee.employee_id, email: employee.email },
-      //  process.env.JWT_SECRET as string,
-      //  { expiresIn: '1h' }
-      //);
-//
-      //res.cookie('token', jwtToken, {
-      //  httpOnly: true,
-      //  secure: false,  //process.env.NODE_ENV !== 'development',
-      //  sameSite: 'strict',
-      //  maxAge: 3600000,
-      //});
-//
-      //return res.json({ message: "Login successful", token: jwtToken });
     } catch (error) {
       console.error("Login error: ", error);
       res.status(500).json({ message: "Server error during login" });
     }
 });
 
+router.get('/logout', (req: Request, res: Response) => {
+  res.clearCookie('token');
+
+  res.redirect('/');
+});
 
 export default router;

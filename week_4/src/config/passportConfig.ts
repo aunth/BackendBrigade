@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 import dotenv from 'dotenv';
 import { EmployeeCredentials } from '../types/types';
-import { dbWorker } from '../database_integration/DataBaseWorker';
+import { dbHandler } from '../database_integration/DataBaseWorker';
 
 dotenv.config();
 
@@ -19,14 +19,14 @@ passport.use(
         secretOrKey: process.env.JWT_SECRET as string,
       },
       async function (jwtPayload, done) {
-        return await dbWorker.getEmployeeByJwtPayLoad(jwtPayload)
+        return await dbHandler.getEmployeeByJwtPayLoad(jwtPayload)
           .then((user) => {
-            console.log(user);
+            console.log('usr: ' + user);
             return done(null, user);
           })
           .catch((err) => {
+            console.log(err);
             return done(err);
-            //return
           });
       }
     )
@@ -35,10 +35,15 @@ passport.use(
 export const authenticationMiddleware = (req: Request, res: Response, next: NextFunction) => {
     passport.authenticate('jwt', { session: false }, (err: any, user:any, info:any) => {
       if (err || !user) {
-        
-        return res.redirect('/');
+        res.clearCookie('token');
+        return res.redirect('/')
       }
       req.user = user;
+      if (user.role !== 'admin') {
+        req.body.name = user.name;
+      } else {
+        req.body.name = undefined;
+      }
       return next();
     })(req, res, next);
   };
@@ -50,7 +55,7 @@ export const authenticationMiddleware = (req: Request, res: Response, next: Next
 //      secretOrKey: process.env.JWT_SECRET as string,
 //    },
 //    async function (jwtPayload, done) {
-//      return await dbWorker.getEmployeeByJwtPayLoad(jwtPayload)
+//      return await dbHandler.getEmployeeByJwtPayLoad(jwtPayload)
 //        .then((user) => {
 //          console.log(user);
 //          return done(null, user);

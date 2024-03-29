@@ -2,7 +2,7 @@
 import express, {Response, Request} from 'express'
 import { getNameById } from '../utils/utils';
 import { HolidayRequest} from '../types/types';
-import { dbWorker } from '../database_integration/DataBaseWorker';
+import { dbHandler } from '../database_integration/DataBaseWorker';
 import { RequestInterface } from '../database_integration/models';
 import { Types } from 'mongoose';
 import { dbConnector, DatabaseType } from '../database_integration/db';
@@ -22,7 +22,7 @@ router.get('/', authenticationMiddleware, async(req: Request, res: Response) => 
     } else {
         employeeId = Number(employeeId);
     }
-	const employeeHolidayRequests: HolidayRequest[] | RequestInterface[] | null = await dbWorker.getHolidayRequestsByEmployeeId(employeeId);
+	const employeeHolidayRequests: HolidayRequest[] | RequestInterface[] | null = await dbHandler.getHolidayRequestsByEmployeeId(employeeId);
 
 	const employeeName = await getNameById(employeeId);
 
@@ -39,7 +39,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
         requestId = Number(requestId);
     }
 
-       const isDelete = await dbWorker.deleteRequestById(requestId);
+       const isDelete = await dbHandler.deleteRequestById(requestId);
 
        if (isDelete) {
            res.status(200).json({ message: 'Request was deleted' });
