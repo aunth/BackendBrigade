@@ -2,8 +2,8 @@ import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 
 passport.use(new GoogleStrategy({
-    clientID: '1043258018742-2enpn02iakd7h45p3jhn8gvi7ck1gk69.apps.googleusercontent.com',
-    clientSecret: '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',
+    clientID: process.env.GOOGLE_CLIENT_ID || '',
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
     callbackURL: 'http://localhost:3000/auth/google/callback',
 }, (accessToken, refreshToken, profile, done) => {
 	console.log('Google authentication successful');

@@ -63,6 +63,7 @@ function generate2FACode() {
 }
 
 async function send2FACode(email: string, code: string) {
+  console.log('Sending request');
   let transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {

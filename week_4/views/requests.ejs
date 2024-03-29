@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,14 +10,17 @@
     <h1>List of Pending Holiday Requests</h1>
     <ul>
         <% holidayRequests.filter(request => request.status === 'pending').forEach(request => { %>
+            <% if (employees.find(employee => employee.id == request.employee_id)?.name !== undefined) { %>
             <li>
-                <strong>Name:</strong> <%= employees.find(employee => employee.id == request.employee_id).name %>,
-                <strong>Start Date:</strong> <%= request.start_date.toLocaleDateString('en-CA') %>,
-                <strong>End Date:</strong> <%= request.end_date.toLocaleDateString('en-CA') %>
-                <button onclick="approveRequest('<%= request.id %>')">Approve</button>
-                <button onclick="rejectRequest('<%= request.id %>')">Reject</button>
+                    <strong>Name:</strong> <%= employees.find(employee => employee.id == request.employee_id)?.name %>,
+                    <strong>Start Date:</strong> <%= request.start_date.toLocaleDateString('en-CA') %>,
+                    <strong>End Date:</strong> <%= request.end_date.toLocaleDateString('en-CA') %>
+                    <% if (employees.length > 1) { %>
+                        <button onclick="approveRequest('<%= request.id %>')">Approve</button>
+                        <button onclick="rejectRequest('<%= request.id %>')">Reject</button>
+                    <% } %>
             </li>
-            </li>
+            <% } %>
         <% }); %>
     </ul>
 </body>

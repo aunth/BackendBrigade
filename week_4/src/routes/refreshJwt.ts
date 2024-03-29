@@ -12,8 +12,6 @@ const router = express.Router();
 router.get('/', async (req, res) => {
     const { token } = req.cookies;
 
-    console.log(123);
-
     if (!token) {
         return res.status(401).json({ message: 'No token provided' });
     }
@@ -35,7 +33,7 @@ router.get('/', async (req, res) => {
             const newToken = jwt.sign(
                 { id: employeeId, email: employeeEmail },
                 process.env.JWT_SECRET as string,
-                { expiresIn: '1h' }
+                { expiresIn: '15s' }
             );
 
             res.cookie('token', newToken, {

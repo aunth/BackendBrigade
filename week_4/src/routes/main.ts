@@ -9,7 +9,7 @@ const router = express.Router();
 
 
 router.get('/', authenticationMiddleware, async (req: Request, res: Response) => {
-  const name = req.query.name || undefined;
+  const name = req.body.name;
   res.render('main', { name });
 });
 

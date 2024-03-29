@@ -41,7 +41,7 @@ router.post('/', async (req, res) => {
         const jwtToken = jwt.sign(
           { id: employeeId, email: isValid2FA.email },
           process.env.JWT_SECRET as string,
-          { expiresIn: '15s' }
+          { expiresIn: '15h' }
         );
   
         res.cookie('token', jwtToken, {

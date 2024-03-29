@@ -15,6 +15,17 @@ class DepartmentController {
         }
     }
 
+    async getAllDepartments(): Promise<DepartmentSQL[]> {
+        try {
+            const departmentRepository = AppDataSource.getRepository(Department);
+            const departments = await departmentRepository.find();
+            return departments as DepartmentSQL[];
+        } catch(error) {
+            throw error; 
+        }
+    }
+
+
     async getDepartmentId(departmentName:string | undefined){
         try {
             const departmentRepository = AppDataSource.getRepository(Department);

@@ -1,5 +1,6 @@
 import express, { Response, Request } from 'express';
 import { dbHandler } from '../database_integration/DataBaseWorker';
+import {Roles} from './../database_integration/models'
 
 const router = express.Router();
 
@@ -9,7 +10,8 @@ router.get('/', async (req: Request, res: Response) => {
         const error = req.query.error || '';
         const name = req.query.name || undefined;
         const email = req.query.email || undefined;
-        res.render('registration', { departments, error, name, email });
+        console.log(Object.values(Roles));
+        res.render('registration', { departments, error, name, email, roles: Object.values(Roles)});
     } catch (error) {
         console.error('Error rendering registration page:', error);
         res.status(500).send('Internal Server Error');

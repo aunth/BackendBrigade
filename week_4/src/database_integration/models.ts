@@ -1,9 +1,16 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
 
+
+export enum Roles {
+    ADMIN='admin', 
+    EMPLOYEE='employee'
+};
+
 export interface EmployeeInterface extends Document {
     _id: Types.ObjectId;
     name: string;
     department: Types.ObjectId;
+    role: string;
     country: string;
     remaining_holidays: number;
 }
@@ -42,6 +49,7 @@ export const CredentialSchema = new Schema({
     employee_id: { type: Types.ObjectId, ref: 'Employees', required: true},
     email: {type: String, required: true},
     password: {type: String, required: true},
+    two_fa_code: {type: String, required: false},
 }, {collection: 'Credentials'})
 
 export const RequestSchema = new Schema({
@@ -56,6 +64,7 @@ export const EmployeeSchema = new Schema({
     _id: { type: Types.ObjectId, required: true },
     name: { type: String, required: true },
     department: { type: Types.ObjectId, ref: 'Departments', required: true },
+    role: { type: String, required: true},
     country: { type: String, required: true },
     remaining_holidays: { type: Number, required: true }
 }, { collection: 'Employees' });

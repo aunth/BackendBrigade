@@ -17,6 +17,7 @@ import { AppDataSource } from "../database";
 import { getEmployees } from "../utils/dataManager";
 import { getRequests } from "../utils/dataManager";
 import * as bcrypt from 'bcryptjs';
+import { creadentialHandler } from "./CredentialHandler";
 
 
 export class DBHandler {
@@ -42,22 +43,26 @@ export class DBHandler {
             throw Error("This name alredy exist");
         }
         if (this.dbConnector.currentDatabaseType == DatabaseType.MongoDB) {
-            console.log(data.remaining_holidays);
+            console.log(data.remainingHolidays);
             const mainData = {
                 _id: new Types.ObjectId(),
                 name: data.name,
                 department: data.department,
+                role: data.role,
                 country: data.country,
                 remaining_holidays: data.remainingHolidays,
             };
 
             const hashedPassword: string = await bcrypt.hash(data.password, 10);
             const aunthData = {
+                _id: new Types.ObjectId(),
                 employee_id: mainData._id,
                 email: data.email,
                 password: hashedPassword,
+                two_fa_code: 'nothing',
             }
             await employeeWorker.insertEmployee(mainData as EmployeeInterface);
+            await creadentialHandler.insertCredential(aunthData as CredentialInterface);
         } else {
             return await employeeController.createEmployee({
                 name: data.name,
@@ -81,12 +86,10 @@ export class DBHandler {
     }
 
 
-    async getEmployeeByJwtPayLoad(jwtPayLoad: any): Promise<Employee | null> {
+    async getEmployeeByJwtPayLoad(jwtPayLoad: any): Promise<Employee | EmployeeInterface |null> {
         try {
             if (this.dbConnector.currentDatabaseType === DatabaseType.MongoDB) {
-                //return await employeeWorker.getByEmail(email);
-                console.log("Need implement for MongoDB");
-                return null;
+                return await employeeWorker.getEmployeeByJwt(jwtPayLoad);
             } else {
                 return await employeeController.getEmployeeByJwt(jwtPayLoad);
             }
@@ -99,9 +102,7 @@ export class DBHandler {
     async save2FACode(email: string, code:string) {
         try {
             if (this.dbConnector.currentDatabaseType === DatabaseType.MongoDB) {
-                //return await employeeWorker.getByEmail(email);
-                console.log("Need implement for MongoDB");
-                return null;
+                return await creadentialHandler.saveCode(email, code);
             } else {
                 return await employeeCredentialController.saveCode(email, code);
             }
@@ -115,8 +116,7 @@ export class DBHandler {
         try {
             if (this.dbConnector.currentDatabaseType === DatabaseType.MongoDB) {
                 //return await employeeWorker.getByEmail(email);
-                console.log("Need implement for MongoDB");
-                return null;
+                return await creadentialHandler.verifyCode(employeeId as Types.ObjectId, code);
             } else {
                 return await employeeCredentialController.verifyCode(employeeId as string, code);
             }
@@ -180,12 +180,12 @@ export class DBHandler {
         }
     }
 
-    async getAllDepartments(): Promise<DepartmentInterface[]> {
+    async getAllDepartments(): Promise<DepartmentInterface[] | DepartmentSQL[]> {
         try {
             if (this.dbConnector.currentDatabaseType === DatabaseType.MongoDB) {
                 return await departmentWorker.readAllDepartments();
             } else if (this.dbConnector.currentDatabaseType === DatabaseType.PostgreSQL) {
-                // Implement logic for reading all departments in PostgreSQL
+                return await departmentController.getAllDepartments();
             } else {
                 throw new Error('Unsupported database type');
             }

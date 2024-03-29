@@ -29,6 +29,7 @@ class EmployeeController {
     async getEmployeeByJwt(jwtPayLoad: any) {
         const employeeRepository = AppDataSource.getRepository(Employee);
         const employee = await employeeRepository.findOneBy({ id: jwtPayLoad.id } );
+        console.log("Answer " + employee);
         if (!employee) {
             console.log('No employee found with that name.');
             return null;

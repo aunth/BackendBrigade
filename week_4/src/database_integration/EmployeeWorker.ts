@@ -33,13 +33,24 @@ class EmployeesWorker {
 	}
 }
 
+	async getEmployeeByJwt(jwtPayLoad: any) {
+		const employee = await EmployeeModel.findById(jwtPayLoad.id);
+		if (!employee) {
+			console.log('No employee found with that name.');
+			return null;
+		} else {
+			return employee;
+		}
+	}
+
 	async getByEmail(email: string): Promise<CredentialInterface | null> {
 		try {
-			const employee = await CredentialModel.findOne({ email });
-			return employee;
-	} catch (error) {
-		console.error('Error getting employee by name:', error);
-		throw error;
+			const credentialData = await CredentialModel.findOne({ email });
+			console.log("Finded user: " + credentialData);
+			return credentialData;
+		} catch (error) {
+			console.error('Error getting employee by name:', error);
+			throw error;
 	}
 }
 
