@@ -1,0 +1,55 @@
+/* Apply some basic styles to the entire form */
+form {
+	max-width: 400px;
+	margin: 0 auto;
+	padding: 20px;
+	background-color: #f9f9f9;
+	border-radius: 8px;
+  }
+  
+  /* Style the form header */
+  form h2 {
+	text-align: center;
+	margin-bottom: 20px;
+	color: #333;
+  }
+  
+  /* Style form fields and labels */
+  form label {
+	display: block;
+	margin-bottom: 8px;
+	color: #555;
+  }
+  
+  form input[type="text"],
+  form input[type="email"],
+  form input[type="password"],
+  form input[type="number"] {
+	width: 100%;
+	padding: 10px;
+	margin-bottom: 15px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	box-sizing: border-box; /* Ensure padding and border are included in width */
+  }
+  
+  /* Style submit button */
+  form button[type="submit"] {
+	width: 100%;
+	padding: 10px;
+	border: none;
+	border-radius: 4px;
+	background-color: #007bff;
+	color: #fff;
+	cursor: pointer;
+  }
+  
+  form button[type="submit"]:hover {
+	background-color: #0056b3;
+  }
+  
+  /* Add some spacing between form elements */
+  form div {
+	margin-bottom: 15px;
+  }
+  
